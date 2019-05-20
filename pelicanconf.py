@@ -35,9 +35,15 @@ DEFAULT_PAGINATION = 10
 #RELATIVE_URLS = True
 
 # Activate ipynb plugin
-MARKUP = ('md', 'ipynb')
+# MARKUP = ('md', 'ipynb')
 
-PLUGIN_PATHS = ['./plugins']
-PLUGINS = ['ipynb.markup']
+# PLUGIN_PATHS = ['./plugins']
+# PLUGINS = ['ipynb.markup']
+
+# Activate liquid tags plugin
+MARKUP = ('md', )
+
+PLUGIN_PATHS = ['./plugins', './plugins/pelican-plugins']
+PLUGINS = ['ipynb.liquid']
 
 IGNORE_FILES = ['.ipynb_checkpoints']
