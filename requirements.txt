@@ -1,0 +1,5 @@
+pelican>=4.0.1
+Markdown>=2.6.11
+jupyter
+ipython>=4.0
+nbconvert>=4.0
