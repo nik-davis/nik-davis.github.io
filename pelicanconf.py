@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 AUTHOR = 'Nik Davis'
-SITENAME = "Nik's Blog"
+SITENAME = "Nik Davis"
 SITEURL = ''
 
 PATH = 'content'
@@ -19,15 +19,25 @@ TRANSLATION_FEED_ATOM = None
 AUTHOR_FEED_ATOM = None
 AUTHOR_FEED_RSS = None
 
+# Set the article URL
+# ARTICLE_URL = 'posts/{date:%Y}/{date:%m}/{date:%d}/{slug}/'
+# ARTICLE_SAVE_AS = 'posts/{date:%Y}/{date:%m}/{date:%d}/{slug}.html'
+
+ARTICLE_URL = 'posts/{date:%Y}/{slug}/'
+ARTICLE_SAVE_AS = 'posts/{date:%Y}/{slug}/index.html'
+
+# YEAR_ARCHIVE_URL = 'posts/{date:%Y}/'
+YEAR_ACHIVE_SAVE_AS = 'posts/{date:%Y}/index.html'
+
 # Blogroll
-LINKS = (('Pelican', 'http://getpelican.com/'),
-         ('Python.org', 'http://python.org/'),
-         ('Jinja2', 'http://jinja.pocoo.org/'),
-         ('You can modify those links in your config file', '#'),)
+# LINKS = (('Pelican', 'http://getpelican.com/'),
+#          ('Python.org', 'http://python.org/'),
+#          ('Jinja2', 'http://jinja.pocoo.org/'),
+#          ('You can modify those links in your config file', '#'),)
 
 # Social widget
-SOCIAL = (('You can add links in your config file', '#'),
-          ('Another social link', '#'),)
+# SOCIAL = (('You can add links in your config file', '#'),
+#           ('Another social link', '#'),)
 
 DEFAULT_PAGINATION = 10
 
@@ -36,14 +46,27 @@ DEFAULT_PAGINATION = 10
 
 # Activate ipynb plugin
 # MARKUP = ('md', 'ipynb')
-
 # PLUGIN_PATHS = ['./plugins']
 # PLUGINS = ['ipynb.markup']
 
 # Activate liquid tags plugin
 MARKUP = ('md', )
 
-PLUGIN_PATHS = ['./plugins', './plugins/pelican-plugins']
+PLUGIN_PATHS = ['plugins', 'plugins/pelican-plugins']
 PLUGINS = ['ipynb.liquid']
 
 IGNORE_FILES = ['.ipynb_checkpoints']
+
+# Theme settings. Options: danielfrg, jakevdp, simple
+THEME = 'theme'
+# THEME = 'themes/notmyidea'
+# THEME = './themes/danielfrg'
+# THEME = './themes/simple'
+
+ABOUT_PAGE = '/pages/about.html'
+TWITTER_USERNAME = 'nikdavis0'
+GITHUB_USERNAME = 'nik-davis'
+STACKOVERFLOW_ADDRESS = 'https://stackoverflow.com/users/10202890/nik-davis'
+SHOW_ARCHIVES = True
+
+STATIC_PATHS = ['images', 'notebooks', 'favicon.ico']
