@@ -57,11 +57,8 @@ PLUGINS = ['ipynb.liquid']
 
 IGNORE_FILES = ['.ipynb_checkpoints']
 
-# Theme settings. Options: danielfrg, jakevdp, simple
+# Theme settings
 THEME = 'theme'
-# THEME = 'themes/notmyidea'
-# THEME = './themes/danielfrg'
-# THEME = './themes/simple'
 
 ABOUT_PAGE = '/pages/about.html'
 TWITTER_USERNAME = 'nikdavis0'
