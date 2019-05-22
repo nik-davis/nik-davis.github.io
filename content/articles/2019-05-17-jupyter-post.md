@@ -6,4 +6,6 @@ Tags: python, firsts
 
 Updating to use liquid tags. (removed summary)
 
+Test link to [GitHub](github.com) (short link) and [full link](http://github.com)
+
 {% notebook notebooks/jupyter-post.ipynb %}

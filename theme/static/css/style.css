@@ -115,8 +115,33 @@ article li {
   font-size: 16px;
   line-height: 1.6em;
 }
-article a:hover {
+article div.article_content p a {
+  color:#222;
+  text-decoration: none;
+  background: linear-gradient(to top, hsl(0,0%, 10%) 1px, transparent 1px);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  transition-property: color, background-size;
+  transition-duration: 200ms;
+  padding-bottom: 1px;
+}
+
+article div.article_content p a:hover {
   text-decoration: underline;
+  background-size: 0% 100%;
+  color: gray;
+  text-decoration: none;
+}
+
+article a.anchor-link {
+  text-decoration: none;
+  color: #222;
+}
+
+article a.anchor-link:hover {
+  text-decoration: none;
+  color: gray;
 }
 article blockquote {
   border-left: 2px solid #c7c7cc;
