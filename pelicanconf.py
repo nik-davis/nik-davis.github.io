@@ -63,6 +63,7 @@ THEME = 'theme'
 ABOUT_PAGE = '/pages/about.html'
 TWITTER_USERNAME = 'nikdavis0'
 GITHUB_USERNAME = 'nik-davis'
+LINKEDIN_USERNAME = 'nik-davis'
 STACKOVERFLOW_ADDRESS = 'https://stackoverflow.com/users/10202890/nik-davis'
 SHOW_ARCHIVES = True
 

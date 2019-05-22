@@ -14,24 +14,26 @@
             <div class="social-links">
                 <ul>
                     <li>Social:</li>
-                    {% if AUTHOR_WEBSITE %}
-                    <li><a href="{{ AUTHOR_WEBSITE }}" rel="me">website</a></li>
-                    {% endif %}
-                    {% if AUTHOR_BLOG %}
-                    <li><a href="{{ AUTHOR_BLOG }}" rel="me">blog</a></li>
-                    {% endif %}
-                    {% if AUTHOR_CV %}
-                    <li><a href="{{ AUTHOR_CV }}" rel="me">CV</a></li>
+                    {% if GITHUB_USERNAME %}
+                        <li class="nav-item"><a class="nav-link social" href="http://github.com/{{ GITHUB_USERNAME }}" rel="me"><i class="fab fa-github"></i></a></li>
                     {% endif %}
                     {% if TWITTER_USERNAME %}
-                    <li><a class="nodec icon-twitter" href="http://twitter.com/{{ TWITTER_USERNAME }}" rel="me"></a>
-                    </li>
+                        <li class="nav-item"><a class="nav-link social" href="http://twitter.com/{{ TWITTER_USERNAME }}" rel="me"><i class="fab fa-twitter"></i></a></li>
                     {% endif %}
-                    {% if GITHUB_USERNAME %}
-                    <li><a class="nodec icon-github" href="http://github.com/{{ GITHUB_USERNAME }}" rel="me"></a></li>
+                    {% if LINKEDIN_USERNAME %}
+                        <li class="nav-item"><a class="nav-link social" href="https://www.linkedin.com/in/{{ LINKEDIN_USERNAME }}" rel="me"><i class="fab fa-linkedin-in"></i></a></li>
                     {% endif %}
                     {% if STACKOVERFLOW_ADDRESS %}
-                    <li><a class="nodec icon-stackoverflow" href="{{ STACKOVERFLOW_ADDRESS }}" rel="me"></a></li>
+                        <li class="nav-item"><a class="nav-link social" href="{{ STACKOVERFLOW_ADDRESS }}" rel="me"><i class="fab fa-stack-overflow"></i></a></li>
+                    {% endif %}
+                    {% if AUTHOR_WEBSITE %}
+                        <li><a href="{{ AUTHOR_WEBSITE }}" rel="me">website</a></li>
+                    {% endif %}
+                    {% if AUTHOR_BLOG %}
+                        <li><a href="{{ AUTHOR_BLOG }}" rel="me">blog</a></li>
+                    {% endif %}
+                    {% if AUTHOR_CV %}
+                        <li><a href="{{ AUTHOR_CV }}" rel="me">CV</a></li>
                     {% endif %}
                 </ul>
         </header>
