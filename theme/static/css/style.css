@@ -1,7 +1,8 @@
 /* Imports */
 @import url("reset.css");
-@import url("https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css");
-/* @import url("https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"); */
+@import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700");
+/* @import url("https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"); */
+@import url("https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css");
 /* @import url("https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"); */
 @import url("icons.css");
 @import url("pygments.css");
@@ -19,15 +20,6 @@ body {
 }
 
 /* Headers */
-/* h1 {font-size: 2em }
-
-h1 {
-  font-weight: 400;
-  line-height: 1.1;
-  margin-bottom: .8em;
-  font-family: 
-} */
-
 header.main-header {
   background: none repeat scroll 0% 0% #205F29;
   margin-bottom: 0px;
@@ -162,19 +154,22 @@ article .meta a.tag {
 article .meta a.tag:hover {
   background: rgba(0, 0, 0, 0.15);
 }
-article .meta a.read_more,
-article .meta a.comments_btn {
+article .meta a.read_more, article .meta a.comments_btn {
   font-size: 14px;
   font-weight: 800;
   padding: 10px 20px;
   color: #205F29;
-  background: #FFF;
   border: 1px solid #205F29;
+  background: linear-gradient(to top, #5C881C 100%, transparent 1px);
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+  background-position: left left;
+  transition-property: color, background-size;
+  transition-duration: 600ms;
 }
-article .meta a.read_more:hover,
-article .meta a.comments_btn:hover {
+article .meta a.read_more:hover, article .meta a.comments_btn:hover {
   color: #FFF;
-  background: #5C881C;
+  background-size: 100% 100%;
 }
 
 /* Index */
@@ -188,9 +183,19 @@ article .meta a.comments_btn:hover {
 }
 .index article header h2 a {
   color: #000;
+  background: linear-gradient(to top, hsl(0,0%, 10%) 1px, transparent 1px);
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  transition-property: color, background-size;
+  transition-duration: 500ms;
+  padding-bottom: 2px;
+
 }
 .index article header h2 a:hover {
-  color: #007EE5;
+  color: #5C881C;
+  text-decoration: none;
+  background-size: 100% 100%;
   text-decoration: none;
 }
 .index .separator {
