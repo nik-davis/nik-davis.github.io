@@ -27,10 +27,10 @@ header .main-header {
 
 /* Anchors */
 a {
-  color: black;
+  color: #007EE5;
   text-decoration: none; }
   a:hover {
-    color: black;
+    color: #007EE5;
     text-decoration: none; }
 
 /*** Sections ***/
@@ -109,17 +109,6 @@ article {
         color: #9E9E9E;
         font-size: 0.85em;
         float: left; }
-  article div.social-links ul {
-    padding: 0px; }
-  article div.social-links li {
-    display: inline;
-    font-size: 20px; }
-    article div.social-links li a {
-      color: #000;
-      padding: 0px; }
-      article div.social-links li a:hover {
-        color: #666;
-        text-decoration: none; }
   article p {
     font-size: 16px;
     margin-bottom: 20px;
@@ -157,6 +146,18 @@ article {
       background-size: 0% 100%;
       color: gray;
       text-decoration: none; }
+  article div.social-links ul {
+    padding: 0px; }
+  article div.social-links li {
+    display: inline;
+    font-size: 20px;
+    margin-right: 10px; }
+    article div.social-links li a {
+      color: #000;
+      padding: 0px; }
+      article div.social-links li a:hover {
+        color: #666;
+        text-decoration: none; }
   article a.anchor-link {
     text-decoration: none;
     color: #222; }
@@ -177,11 +178,11 @@ article {
     font-size: 13px; }
   article .meta {
     font-size: 11px; }
-    article .meta a:hover {
-      text-decoration: none; }
     article .meta div {
       margin-bottom: 20px;
       display: block; }
+    article .meta a:hover {
+      text-decoration: none; }
     article .meta a.tag {
       margin: 0 10px 10px 0;
       padding: 1px 12px;
@@ -191,7 +192,7 @@ article {
       background: rgba(0, 0, 0, 0.05); }
       article .meta a.tag:hover {
         background: rgba(0, 0, 0, 0.15); }
-    article .meta a.read_more, article .meta a.comments_btn {
+    article .meta a.button {
       font-size: 14px;
       font-weight: 800;
       padding: 10px 20px;
@@ -201,11 +202,10 @@ article {
       background-size: 0% 100%;
       background-repeat: no-repeat;
       background-position: left left;
-      transition-property: color, background-size;
-      transition-duration: 600ms; }
-    article .meta a.read_more:hover, article .meta a.comments_btn:hover {
-      color: #FFF;
-      background-size: 100% 100%; }
+      transition: all 600ms ease; }
+      article .meta a.button:hover {
+        color: #FFF;
+        background-size: 100% 100%; }
 
 /* Post */
 .post {

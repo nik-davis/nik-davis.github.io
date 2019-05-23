@@ -1,4 +1,4 @@
-// node-sass --watch --recursive --output theme/static/css --source-map-contents theme/static/css
+// node-sass --watch --recursive --output theme/static/css --source-map-contents theme/static/scss
 
 /* Imports */
 @import url("reset.css");
@@ -37,13 +37,11 @@ header {
 
 /* Anchors */
 a {
-    // color: #007EE5;
-    color: black;
+    color: #007EE5;
     text-decoration: none;
   
     &:hover {
-        // color: #007EE5;
-        color: black;
+        color: #007EE5;
         text-decoration: none;
     }
 }
@@ -157,27 +155,7 @@ article {
                 float: left;
             }
         }
-    }
-
-    div.social-links {
-        ul { padding: 0px; }
-        
-        li {
-            display: inline;
-            font-size: 20px;
-            
-            a {
-                color: #000;
-                padding: 0px;
-
-                &:hover {
-                    color: #666;
-                    text-decoration: none;
-                }
-            }
-        }
-    }    
-        
+    }   
     
     p {
         font-size: 16px;
@@ -232,6 +210,26 @@ article {
         }
     }
 
+    div.social-links {
+        ul { padding: 0px; }
+        
+        li {
+            display: inline;
+            font-size: 20px;
+            margin-right: 10px;
+            
+            a {
+                color: #000;
+                padding: 0px;
+
+                &:hover {
+                    color: #666;
+                    text-decoration: none;
+                }
+            }
+        }
+    }    
+
     a.anchor-link {
         text-decoration: none;
         color: #222;
@@ -260,46 +258,50 @@ article {
     
     .meta { 
         font-size: 11px; 
-        
-        a:hover {
-            text-decoration: none;
-        }
-        
+
         div {
             margin-bottom: 20px;
             display: block;
         }
         
-        a.tag {
-            margin: 0 10px 10px 0;
-            padding: 1px 12px;
-            display: inline-block;
-            font-size: 14px;
-            color: rgba(0, 0, 0, 0.8);
-            background: rgba(0, 0, 0, 0.05);
-            
-            &:hover { 
-                background: rgba(0, 0, 0, 0.15);
+        a {
+
+            &:hover {
+                text-decoration: none;
             }
-        }
-        
-        a.read_more, a.comments_btn {
-            font-size: 14px;
-            font-weight: 800;
-            padding: 10px 20px;
-            color: #205F29;
-            border: 1px solid #205F29;
-            background: linear-gradient(to top, #5C881C 100%, transparent 1px);
-            background-size: 0% 100%;
-            background-repeat: no-repeat;
-            background-position: left left;
-            transition-property: color, background-size;
-            transition-duration: 600ms;
             
-        }
-        a.read_more:hover, a.comments_btn:hover {
-            color: #FFF;
-            background-size: 100% 100%;
+            &.tag {
+                margin: 0 10px 10px 0;
+                padding: 1px 12px;
+                display: inline-block;
+                font-size: 14px;
+                color: rgba(0, 0, 0, 0.8);
+                background: rgba(0, 0, 0, 0.05);
+                
+                &:hover { 
+                    background: rgba(0, 0, 0, 0.15);
+                }
+            }
+            
+            &.button {
+                font-size: 14px;
+                font-weight: 800;
+                padding: 10px 20px;
+                color: #205F29;
+                border: 1px solid #205F29;
+                background: linear-gradient(to top, #5C881C 100%, transparent 1px);
+                background-size: 0% 100%;
+                background-repeat: no-repeat;
+                background-position: left left;
+                transition: all 600ms ease;
+                // transition-property: color, background-size;
+                // transition-duration: 600ms;
+                
+                &:hover{
+                    color: #FFF;
+                    background-size: 100% 100%;
+                }
+            }
         }
     }
 }
