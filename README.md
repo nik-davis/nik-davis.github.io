@@ -1,7 +1,14 @@
 # nik-davis.github.io-src
 Source for my blog http://nik-davis.github.io/
 
-To update:
+To test:
+
+```
+pelican content -d -r
+pelican -l
+```
+
+To publish:
 
 ```
 pelican content -s publishconf.py
