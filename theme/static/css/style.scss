@@ -88,22 +88,40 @@ a {
         display: block;
         margin-bottom: 100px;
 
-        // Animate pagination boxes?
-        .left { text-align: right; }
+        ul {
+            text-align: center;
+            
+            li {
+                display: inline-block;
+                margin: 0 5px;
+ 
+                a {
+                    color: #5C881C;
+                    font-weight: bold;
+                    padding: 8px 20px;
+                    margin-left: 10px;
+                    border: 2px solid #5C881C;
+                    background-image: linear-gradient(to right, #FFF 50%, #5C881C 50%);
+                    background-size: 200% 100%;
+                    background-position: left bottom;
+                    background-clip: padding-box;
+                    transition: all 600ms ease;
+                    
+                    &:hover {
+                        background-position: right bottom;
+                        color: #FFF;
+                    }
 
-        .right { text-align: left; }
+                    &.right {
+                        background-image: linear-gradient(to left, #FFF 50%, #5C881C 50%);
+                        background-position: right bottom;
 
-        a {
-            display: inline-block;
-            border: 2px solid #5C881C;
-            margin: 0 5px;
-            padding: 8px 20px;
-            font-weight: bold;
-            color: #5C881C;
-
-            &:hover {
-                color: #FFF;
-                background: #5C881C;
+                        &:hover {
+                            background-position: left bottom;
+                        }
+                    }
+                }
+                
             }
         }
     }

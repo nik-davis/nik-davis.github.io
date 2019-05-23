@@ -34,16 +34,14 @@
     {% endfor %}
 
     <nav class="pagination row">
-        <div class="col-xs-6 left">
+        <ul>
             {% if articles_page.has_next() %}
-            <a class="prev" href="{{ SITEURL }}/{{ articles_next_page.url }}">&#8592; Past</a>
+            <li><a class="left" href="{{ SITEURL }}/{{ articles_next_page.url }}">&#8592; Past</a></li>
             {% endif %}
-        </div>
-        <div class="col-xs-6 right">
             {% if articles_page.has_previous() %}
-            <a class="next" href="{{ SITEURL }}/{{ articles_previous_page.url }}">Future &#8594;</a>
+            <li><a class="right" href="{{ SITEURL }}/{{ articles_previous_page.url }}">Future &#8594;</a></li>
             {% endif %}
-        </div>
+        </ul>
     </nav>
 
 </div>
