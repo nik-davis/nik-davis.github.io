@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ SITENAME }} - {{ period | reverse | join(' ') }} archives{% endblock %}
+
+{% block content %}
+<!-- Basic template -->
+<!--<h1>Archives for {{ period | reverse | join(' ') }}</h1>
+
+<dl>
+{% for article in dates %}
+    <dt>{{ article.locale_date }}</dt>
+    <dd><a href="{{ SITEURL }}/{{ article.url }}">{{ article.title }}</a></dd>
+{% endfor %}
+</dl> -->
+
+<div class="container list">
+    <article>
+        <h1 style="margin-bottom: 30px;">Archives for {{ period | reverse | join(' ') }}</h1>
+        <ul class="double-list">
+            {% for article in dates %}
+            <li>
+                <a href="{{ SITEURL }}/{{ article.url }}">
+                    <h2>{{ article.title }}</h2>
+                </a>
+                <span>{{ article.date.strftime('%d.%m.%Y') }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </article>
+</div>
+{% endblock %}

@@ -237,7 +237,21 @@ article {
       .list ul.double-list li h2 {
         font-size: 1em;
         display: inline;
-        font-weight: normal; }
+        font-weight: normal;
+        color: #222;
+        text-decoration: none;
+        background: linear-gradient(to top, #1a1a1a 1px, transparent 1px);
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+        background-position: center center;
+        transition-property: color, background-size;
+        transition-duration: 600ms;
+        padding-bottom: 1px; }
+        .list ul.double-list li h2:hover {
+          text-decoration: underline;
+          background-size: 0% 100%;
+          color: gray;
+          text-decoration: none; }
       .list ul.double-list li span {
         font-family: sans-serif;
         text-transform: uppercase;

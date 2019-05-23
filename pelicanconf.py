@@ -26,8 +26,8 @@ AUTHOR_FEED_RSS = None
 ARTICLE_URL = 'posts/{date:%Y}/{slug}/'
 ARTICLE_SAVE_AS = 'posts/{date:%Y}/{slug}/index.html'
 
-# YEAR_ARCHIVE_URL = 'posts/{date:%Y}/'
-YEAR_ACHIVE_SAVE_AS = 'posts/{date:%Y}/index.html'
+YEAR_ARCHIVE_URL = 'posts/{date:%Y}/'
+YEAR_ARCHIVE_SAVE_AS = 'posts/{date:%Y}/index.html'
 
 # Blogroll
 # LINKS = (('Pelican', 'http://getpelican.com/'),
@@ -39,7 +39,7 @@ YEAR_ACHIVE_SAVE_AS = 'posts/{date:%Y}/index.html'
 # SOCIAL = (('You can add links in your config file', '#'),
 #           ('Another social link', '#'),)
 
-DEFAULT_PAGINATION = 2 # for testing default:10
+DEFAULT_PAGINATION = 10
 
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True
