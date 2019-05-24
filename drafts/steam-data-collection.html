@@ -1,0 +1,2363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="Nik Davis">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <title>Steam Project - Part 1. Data collection | Nik Davis</title>
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" title="Nik Davis blog atom feed" href="/feeds/all.atom.xml" />
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/brands.css" integrity="sha384-i2PyM6FMpVnxjRPi0KW/xIS7hkeSznkllv+Hx/MtYDaHA5VcF0yL3KVlvzp8bWjQ" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/fontawesome.css" integrity="sha384-sri+NftO+0hcisDKgr287Y/1LVnInHJ1l+XC7+FOabmTTIK0HnE2ID+xxvJ21c5J" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="/theme/css/style.css"/>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+
+<body>
+    <header class="navbar navbar-inverse bs-docs-nav">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#theNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span> 
+                </button>
+                <a class="navbar-brand" href="/" title="Home" class="title">Nik Davis</a>
+            </div>
+            <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation" id="theNavbar">
+                <ul class="nav navbar-nav navbar-right">
+                        <li class="nav-item"><a class="nav-link social" href="http://github.com/nik-davis" rel="me"><i class="fab fa-github"></i></a></li>
+                        <li class="nav-item"><a class="nav-link social" href="http://twitter.com/nikdavis0" rel="me"><i class="fab fa-twitter"></i></a></li>
+                        <li class="nav-item"><a class="nav-link social" href="https://www.linkedin.com/in/nik-davis" rel="me"><i class="fab fa-linkedin-in"></i></a></li>
+                        <li class="nav-item"><a class="nav-link social" href="https://stackoverflow.com/users/10202890/nik-davis" rel="me"><i class="fab fa-stack-overflow"></i></a></li>
+                        <li class="nav-item"><a href="/pages/about.html" title="About">About</a></li>
+                        <li class="nav-item"><a href="/archives.html" title="Archive">Archive</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div id="wrap">
+<div class="container post">
+    <article>
+        <header>
+            <h1>Steam Project - Part 1. Data collection</h1>
+            <time datetime="article.date.isoformat()" pubdate>Thu 23 May 2019</time>
+        </header>
+
+        <div class="article_content">
+            <style type="text/css">/*!
+*
+* IPython notebook
+*
+*/
+/* CSS font colors for translated ANSI escape sequences */
+/* The color values are a mix of
+   http://www.xcolors.net/dl/baskerville-ivorylight and
+   http://www.xcolors.net/dl/euphrasia */
+.ansi-black-fg {
+  color: #3E424D;
+}
+.ansi-black-bg {
+  background-color: #3E424D;
+}
+.ansi-black-intense-fg {
+  color: #282C36;
+}
+.ansi-black-intense-bg {
+  background-color: #282C36;
+}
+.ansi-red-fg {
+  color: #E75C58;
+}
+.ansi-red-bg {
+  background-color: #E75C58;
+}
+.ansi-red-intense-fg {
+  color: #B22B31;
+}
+.ansi-red-intense-bg {
+  background-color: #B22B31;
+}
+.ansi-green-fg {
+  color: #00A250;
+}
+.ansi-green-bg {
+  background-color: #00A250;
+}
+.ansi-green-intense-fg {
+  color: #007427;
+}
+.ansi-green-intense-bg {
+  background-color: #007427;
+}
+.ansi-yellow-fg {
+  color: #DDB62B;
+}
+.ansi-yellow-bg {
+  background-color: #DDB62B;
+}
+.ansi-yellow-intense-fg {
+  color: #B27D12;
+}
+.ansi-yellow-intense-bg {
+  background-color: #B27D12;
+}
+.ansi-blue-fg {
+  color: #208FFB;
+}
+.ansi-blue-bg {
+  background-color: #208FFB;
+}
+.ansi-blue-intense-fg {
+  color: #0065CA;
+}
+.ansi-blue-intense-bg {
+  background-color: #0065CA;
+}
+.ansi-magenta-fg {
+  color: #D160C4;
+}
+.ansi-magenta-bg {
+  background-color: #D160C4;
+}
+.ansi-magenta-intense-fg {
+  color: #A03196;
+}
+.ansi-magenta-intense-bg {
+  background-color: #A03196;
+}
+.ansi-cyan-fg {
+  color: #60C6C8;
+}
+.ansi-cyan-bg {
+  background-color: #60C6C8;
+}
+.ansi-cyan-intense-fg {
+  color: #258F8F;
+}
+.ansi-cyan-intense-bg {
+  background-color: #258F8F;
+}
+.ansi-white-fg {
+  color: #C5C1B4;
+}
+.ansi-white-bg {
+  background-color: #C5C1B4;
+}
+.ansi-white-intense-fg {
+  color: #A1A6B2;
+}
+.ansi-white-intense-bg {
+  background-color: #A1A6B2;
+}
+.ansi-default-inverse-fg {
+  color: #FFFFFF;
+}
+.ansi-default-inverse-bg {
+  background-color: #000000;
+}
+.ansi-bold {
+  font-weight: bold;
+}
+.ansi-underline {
+  text-decoration: underline;
+}
+/* The following styles are deprecated an will be removed in a future version */
+.ansibold {
+  font-weight: bold;
+}
+.ansi-inverse {
+  outline: 0.5px dotted;
+}
+/* use dark versions for foreground, to improve visibility */
+.ansiblack {
+  color: black;
+}
+.ansired {
+  color: darkred;
+}
+.ansigreen {
+  color: darkgreen;
+}
+.ansiyellow {
+  color: #c4a000;
+}
+.ansiblue {
+  color: darkblue;
+}
+.ansipurple {
+  color: darkviolet;
+}
+.ansicyan {
+  color: steelblue;
+}
+.ansigray {
+  color: gray;
+}
+/* and light for background, for the same reason */
+.ansibgblack {
+  background-color: black;
+}
+.ansibgred {
+  background-color: red;
+}
+.ansibggreen {
+  background-color: green;
+}
+.ansibgyellow {
+  background-color: yellow;
+}
+.ansibgblue {
+  background-color: blue;
+}
+.ansibgpurple {
+  background-color: magenta;
+}
+.ansibgcyan {
+  background-color: cyan;
+}
+.ansibggray {
+  background-color: gray;
+}
+div.cell {
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: vertical;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: vertical;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  border-radius: 2px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  border-width: 1px;
+  border-style: solid;
+  border-color: transparent;
+  width: 100%;
+  padding: 5px;
+  /* This acts as a spacer between cells, that is outside the border */
+  margin: 0px;
+  outline: none;
+  position: relative;
+  overflow: visible;
+}
+div.cell:before {
+  position: absolute;
+  display: block;
+  top: -1px;
+  left: -1px;
+  width: 5px;
+  height: calc(100% +  2px);
+  content: '';
+  background: transparent;
+}
+div.cell.jupyter-soft-selected {
+  border-left-color: #E3F2FD;
+  border-left-width: 1px;
+  padding-left: 5px;
+  border-right-color: #E3F2FD;
+  border-right-width: 1px;
+  background: #E3F2FD;
+}
+@media print {
+  div.cell.jupyter-soft-selected {
+    border-color: transparent;
+  }
+}
+div.cell.selected,
+div.cell.selected.jupyter-soft-selected {
+  border-color: #ababab;
+}
+div.cell.selected:before,
+div.cell.selected.jupyter-soft-selected:before {
+  position: absolute;
+  display: block;
+  top: -1px;
+  left: -1px;
+  width: 5px;
+  height: calc(100% +  2px);
+  content: '';
+  background: #42A5F5;
+}
+@media print {
+  div.cell.selected,
+  div.cell.selected.jupyter-soft-selected {
+    border-color: transparent;
+  }
+}
+.edit_mode div.cell.selected {
+  border-color: #66BB6A;
+}
+.edit_mode div.cell.selected:before {
+  position: absolute;
+  display: block;
+  top: -1px;
+  left: -1px;
+  width: 5px;
+  height: calc(100% +  2px);
+  content: '';
+  background: #66BB6A;
+}
+@media print {
+  .edit_mode div.cell.selected {
+    border-color: transparent;
+  }
+}
+.prompt {
+  /* This needs to be wide enough for 3 digit prompt numbers: In[100]: */
+  min-width: 14ex;
+  /* This padding is tuned to match the padding on the CodeMirror editor. */
+  padding: 0.4em;
+  margin: 0px;
+  font-family: monospace;
+  text-align: right;
+  /* This has to match that of the the CodeMirror class line-height below */
+  line-height: 1.21429em;
+  /* Don't highlight prompt number selection */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  /* Use default cursor */
+  cursor: default;
+}
+@media (max-width: 540px) {
+  .prompt {
+    text-align: left;
+  }
+}
+div.inner_cell {
+  min-width: 0;
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: vertical;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: vertical;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  /* Old browsers */
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  box-flex: 1;
+  /* Modern browsers */
+  flex: 1;
+}
+/* input_area and input_prompt must match in top border and margin for alignment */
+div.input_area {
+  border: 1px solid #cfcfcf;
+  border-radius: 2px;
+  background: #f7f7f7;
+  line-height: 1.21429em;
+}
+/* This is needed so that empty prompt areas can collapse to zero height when there
+   is no content in the output_subarea and the prompt. The main purpose of this is
+   to make sure that empty JavaScript output_subareas have no height. */
+div.prompt:empty {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+div.unrecognized_cell {
+  padding: 5px 5px 5px 0px;
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: horizontal;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: horizontal;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+div.unrecognized_cell .inner_cell {
+  border-radius: 2px;
+  padding: 5px;
+  font-weight: bold;
+  color: red;
+  border: 1px solid #cfcfcf;
+  background: #eaeaea;
+}
+div.unrecognized_cell .inner_cell a {
+  color: inherit;
+  text-decoration: none;
+}
+div.unrecognized_cell .inner_cell a:hover {
+  color: inherit;
+  text-decoration: none;
+}
+@media (max-width: 540px) {
+  div.unrecognized_cell > div.prompt {
+    display: none;
+  }
+}
+div.code_cell {
+  /* avoid page breaking on code cells when printing */
+}
+@media print {
+  div.code_cell {
+    page-break-inside: avoid;
+  }
+}
+/* any special styling for code cells that are currently running goes here */
+div.input {
+  page-break-inside: avoid;
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: horizontal;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: horizontal;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+@media (max-width: 540px) {
+  div.input {
+    /* Old browsers */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-box-align: stretch;
+    display: -moz-box;
+    -moz-box-orient: vertical;
+    -moz-box-align: stretch;
+    display: box;
+    box-orient: vertical;
+    box-align: stretch;
+    /* Modern browsers */
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+/* input_area and input_prompt must match in top border and margin for alignment */
+div.input_prompt {
+  color: #303F9F;
+  border-top: 1px solid transparent;
+}
+div.input_area > div.highlight {
+  margin: 0.4em;
+  border: none;
+  padding: 0px;
+  background-color: transparent;
+}
+div.input_area > div.highlight > pre {
+  margin: 0px;
+  border: none;
+  padding: 0px;
+  background-color: transparent;
+}
+/* The following gets added to the <head> if it is detected that the user has a
+ * monospace font with inconsistent normal/bold/italic height.  See
+ * notebookmain.js.  Such fonts will have keywords vertically offset with
+ * respect to the rest of the text.  The user should select a better font.
+ * See: https://github.com/ipython/ipython/issues/1503
+ *
+ * .CodeMirror span {
+ *      vertical-align: bottom;
+ * }
+ */
+.CodeMirror {
+  line-height: 1.21429em;
+  /* Changed from 1em to our global default */
+  font-size: 14px;
+  height: auto;
+  /* Changed to auto to autogrow */
+  background: none;
+  /* Changed from white to allow our bg to show through */
+}
+.CodeMirror-scroll {
+  /*  The CodeMirror docs are a bit fuzzy on if overflow-y should be hidden or visible.*/
+  /*  We have found that if it is visible, vertical scrollbars appear with font size changes.*/
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+.CodeMirror-lines {
+  /* In CM2, this used to be 0.4em, but in CM3 it went to 4px. We need the em value because */
+  /* we have set a different line-height and want this to scale with that. */
+  /* Note that this should set vertical padding only, since CodeMirror assumes
+       that horizontal padding will be set on CodeMirror pre */
+  padding: 0.4em 0;
+}
+.CodeMirror-linenumber {
+  padding: 0 8px 0 4px;
+}
+.CodeMirror-gutters {
+  border-bottom-left-radius: 2px;
+  border-top-left-radius: 2px;
+}
+.CodeMirror pre {
+  /* In CM3 this went to 4px from 0 in CM2. This sets horizontal padding only,
+    use .CodeMirror-lines for vertical */
+  padding: 0 0.4em;
+  border: 0;
+  border-radius: 0;
+}
+.CodeMirror-cursor {
+  border-left: 1.4px solid black;
+}
+@media screen and (min-width: 2138px) and (max-width: 4319px) {
+  .CodeMirror-cursor {
+    border-left: 2px solid black;
+  }
+}
+@media screen and (min-width: 4320px) {
+  .CodeMirror-cursor {
+    border-left: 4px solid black;
+  }
+}
+/*
+
+Original style from softwaremaniacs.org (c) Ivan Sagalaev <Maniac@SoftwareManiacs.Org>
+Adapted from GitHub theme
+
+*/
+.highlight-base {
+  color: #000;
+}
+.highlight-variable {
+  color: #000;
+}
+.highlight-variable-2 {
+  color: #1a1a1a;
+}
+.highlight-variable-3 {
+  color: #333333;
+}
+.highlight-string {
+  color: #BA2121;
+}
+.highlight-comment {
+  color: #408080;
+  font-style: italic;
+}
+.highlight-number {
+  color: #080;
+}
+.highlight-atom {
+  color: #88F;
+}
+.highlight-keyword {
+  color: #008000;
+  font-weight: bold;
+}
+.highlight-builtin {
+  color: #008000;
+}
+.highlight-error {
+  color: #f00;
+}
+.highlight-operator {
+  color: #AA22FF;
+  font-weight: bold;
+}
+.highlight-meta {
+  color: #AA22FF;
+}
+/* previously not defined, copying from default codemirror */
+.highlight-def {
+  color: #00f;
+}
+.highlight-string-2 {
+  color: #f50;
+}
+.highlight-qualifier {
+  color: #555;
+}
+.highlight-bracket {
+  color: #997;
+}
+.highlight-tag {
+  color: #170;
+}
+.highlight-attribute {
+  color: #00c;
+}
+.highlight-header {
+  color: blue;
+}
+.highlight-quote {
+  color: #090;
+}
+.highlight-link {
+  color: #00c;
+}
+/* apply the same style to codemirror */
+.cm-s-ipython span.cm-keyword {
+  color: #008000;
+  font-weight: bold;
+}
+.cm-s-ipython span.cm-atom {
+  color: #88F;
+}
+.cm-s-ipython span.cm-number {
+  color: #080;
+}
+.cm-s-ipython span.cm-def {
+  color: #00f;
+}
+.cm-s-ipython span.cm-variable {
+  color: #000;
+}
+.cm-s-ipython span.cm-operator {
+  color: #AA22FF;
+  font-weight: bold;
+}
+.cm-s-ipython span.cm-variable-2 {
+  color: #1a1a1a;
+}
+.cm-s-ipython span.cm-variable-3 {
+  color: #333333;
+}
+.cm-s-ipython span.cm-comment {
+  color: #408080;
+  font-style: italic;
+}
+.cm-s-ipython span.cm-string {
+  color: #BA2121;
+}
+.cm-s-ipython span.cm-string-2 {
+  color: #f50;
+}
+.cm-s-ipython span.cm-meta {
+  color: #AA22FF;
+}
+.cm-s-ipython span.cm-qualifier {
+  color: #555;
+}
+.cm-s-ipython span.cm-builtin {
+  color: #008000;
+}
+.cm-s-ipython span.cm-bracket {
+  color: #997;
+}
+.cm-s-ipython span.cm-tag {
+  color: #170;
+}
+.cm-s-ipython span.cm-attribute {
+  color: #00c;
+}
+.cm-s-ipython span.cm-header {
+  color: blue;
+}
+.cm-s-ipython span.cm-quote {
+  color: #090;
+}
+.cm-s-ipython span.cm-link {
+  color: #00c;
+}
+.cm-s-ipython span.cm-error {
+  color: #f00;
+}
+.cm-s-ipython span.cm-tab {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAMCAYAAAAkuj5RAAAAAXNSR0IArs4c6QAAAGFJREFUSMft1LsRQFAQheHPowAKoACx3IgEKtaEHujDjORSgWTH/ZOdnZOcM/sgk/kFFWY0qV8foQwS4MKBCS3qR6ixBJvElOobYAtivseIE120FaowJPN75GMu8j/LfMwNjh4HUpwg4LUAAAAASUVORK5CYII=);
+  background-position: right;
+  background-repeat: no-repeat;
+}
+div.output_wrapper {
+  /* this position must be relative to enable descendents to be absolute within it */
+  position: relative;
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: vertical;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: vertical;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  z-index: 1;
+}
+/* class for the output area when it should be height-limited */
+div.output_scroll {
+  /* ideally, this would be max-height, but FF barfs all over that */
+  height: 24em;
+  /* FF needs this *and the wrapper* to specify full width, or it will shrinkwrap */
+  width: 100%;
+  overflow: auto;
+  border-radius: 2px;
+  -webkit-box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+  display: block;
+}
+/* output div while it is collapsed */
+div.output_collapsed {
+  margin: 0px;
+  padding: 0px;
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: vertical;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: vertical;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+div.out_prompt_overlay {
+  height: 100%;
+  padding: 0px 0.4em;
+  position: absolute;
+  border-radius: 2px;
+}
+div.out_prompt_overlay:hover {
+  /* use inner shadow to get border that is computed the same on WebKit/FF */
+  -webkit-box-shadow: inset 0 0 1px #000;
+  box-shadow: inset 0 0 1px #000;
+  background: rgba(240, 240, 240, 0.5);
+}
+div.output_prompt {
+  color: #D84315;
+}
+/* This class is the outer container of all output sections. */
+div.output_area {
+  padding: 0px;
+  page-break-inside: avoid;
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: horizontal;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: horizontal;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+div.output_area .MathJax_Display {
+  text-align: left !important;
+}
+div.output_area 
+div.output_area 
+div.output_area img,
+div.output_area svg {
+  max-width: 100%;
+  height: auto;
+}
+div.output_area img.unconfined,
+div.output_area svg.unconfined {
+  max-width: none;
+}
+div.output_area .mglyph > img {
+  max-width: none;
+}
+/* This is needed to protect the pre formating from global settings such
+   as that of bootstrap */
+.output {
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: vertical;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: vertical;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+@media (max-width: 540px) {
+  div.output_area {
+    /* Old browsers */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-box-align: stretch;
+    display: -moz-box;
+    -moz-box-orient: vertical;
+    -moz-box-align: stretch;
+    display: box;
+    box-orient: vertical;
+    box-align: stretch;
+    /* Modern browsers */
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+div.output_area pre {
+  margin: 0;
+  padding: 1px 0 1px 0;
+  border: 0;
+  vertical-align: baseline;
+  color: black;
+  background-color: transparent;
+  border-radius: 0;
+}
+/* This class is for the output subarea inside the output_area and after
+   the prompt div. */
+div.output_subarea {
+  overflow-x: auto;
+  padding: 0.4em;
+  /* Old browsers */
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  box-flex: 1;
+  /* Modern browsers */
+  flex: 1;
+  max-width: calc(100% - 14ex);
+}
+div.output_scroll div.output_subarea {
+  overflow-x: visible;
+}
+/* The rest of the output_* classes are for special styling of the different
+   output types */
+/* all text output has this class: */
+div.output_text {
+  text-align: left;
+  color: #000;
+  /* This has to match that of the the CodeMirror class line-height below */
+  line-height: 1.21429em;
+}
+/* stdout/stderr are 'text' as well as 'stream', but execute_result/error are *not* streams */
+div.output_stderr {
+  background: #fdd;
+  /* very light red background for stderr */
+}
+div.output_latex {
+  text-align: left;
+}
+/* Empty output_javascript divs should have no height */
+div.output_javascript:empty {
+  padding: 0;
+}
+.js-error {
+  color: darkred;
+}
+/* raw_input styles */
+div.raw_input_container {
+  line-height: 1.21429em;
+  padding-top: 5px;
+}
+pre.raw_input_prompt {
+  /* nothing needed here. */
+}
+input.raw_input {
+  font-family: monospace;
+  font-size: inherit;
+  color: inherit;
+  width: auto;
+  /* make sure input baseline aligns with prompt */
+  vertical-align: baseline;
+  /* padding + margin = 0.5em between prompt and cursor */
+  padding: 0em 0.25em;
+  margin: 0em 0.25em;
+}
+input.raw_input:focus {
+  box-shadow: none;
+}
+p.p-space {
+  margin-bottom: 10px;
+}
+div.output_unrecognized {
+  padding: 5px;
+  font-weight: bold;
+  color: red;
+}
+div.output_unrecognized a {
+  color: inherit;
+  text-decoration: none;
+}
+div.output_unrecognized a:hover {
+  color: inherit;
+  text-decoration: none;
+}
+.rendered_html {
+  color: #000;
+  /* any extras will just be numbers: */
+}
+
+
+
+.rendered_html :link {
+  text-decoration: underline;
+}
+.rendered_html :visited {
+  text-decoration: underline;
+}
+
+
+
+
+
+
+.rendered_html h1:first-child {
+  margin-top: 0.538em;
+}
+.rendered_html h2:first-child {
+  margin-top: 0.636em;
+}
+.rendered_html h3:first-child {
+  margin-top: 0.777em;
+}
+.rendered_html h4:first-child {
+  margin-top: 1em;
+}
+.rendered_html h5:first-child {
+  margin-top: 1em;
+}
+.rendered_html h6:first-child {
+  margin-top: 1em;
+}
+.rendered_html ul:not(.list-inline),
+.rendered_html ol:not(.list-inline) {
+  padding-left: 2em;
+}
+
+
+
+
+
+
+
+
+.rendered_html * + ul {
+  margin-top: 1em;
+}
+.rendered_html * + ol {
+  margin-top: 1em;
+}
+
+
+
+
+
+.rendered_html pre,
+
+
+
+
+.rendered_html tr,
+.rendered_html th,
+
+
+.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+.rendered_html * + table {
+  margin-top: 1em;
+}
+
+.rendered_html * + p {
+  margin-top: 1em;
+}
+
+.rendered_html * + img {
+  margin-top: 1em;
+}
+.rendered_html img,
+
+.rendered_html img.unconfined,
+
+
+.rendered_html * + .alert {
+  margin-top: 1em;
+}
+[dir="rtl"] 
+div.text_cell {
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: horizontal;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: horizontal;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+@media (max-width: 540px) {
+  div.text_cell > div.prompt {
+    display: none;
+  }
+}
+div.text_cell_render {
+  /*font-family: "Helvetica Neue", Arial, Helvetica, Geneva, sans-serif;*/
+  outline: none;
+  resize: none;
+  width: inherit;
+  border-style: none;
+  padding: 0.5em 0.5em 0.5em 0.4em;
+  color: #000;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
+a.anchor-link:link {
+  text-decoration: none;
+  padding: 0px 20px;
+  visibility: hidden;
+}
+h1:hover .anchor-link,
+h2:hover .anchor-link,
+h3:hover .anchor-link,
+h4:hover .anchor-link,
+h5:hover .anchor-link,
+h6:hover .anchor-link {
+  visibility: visible;
+}
+.text_cell.rendered .input_area {
+  display: none;
+}
+.text_cell.rendered 
+.text_cell.rendered .rendered_html tr,
+.text_cell.rendered .rendered_html th,
+.text_cell.rendered 
+.text_cell.unrendered .text_cell_render {
+  display: none;
+}
+.text_cell .dropzone .input_area {
+  border: 2px dashed #bababa;
+  margin: -1px;
+}
+.cm-header-1,
+.cm-header-2,
+.cm-header-3,
+.cm-header-4,
+.cm-header-5,
+.cm-header-6 {
+  font-weight: bold;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.cm-header-1 {
+  font-size: 185.7%;
+}
+.cm-header-2 {
+  font-size: 157.1%;
+}
+.cm-header-3 {
+  font-size: 128.6%;
+}
+.cm-header-4 {
+  font-size: 110%;
+}
+.cm-header-5 {
+  font-size: 100%;
+  font-style: italic;
+}
+.cm-header-6 {
+  font-size: 100%;
+  font-style: italic;
+}
+</style>
+<style type="text/css">.highlight .hll { background-color: #ffffcc }
+.highlight  { background: #f8f8f8; }
+.highlight .c { color: #408080; font-style: italic } /* Comment */
+.highlight .err { border: 1px solid #FF0000 } /* Error */
+.highlight .k { color: #008000; font-weight: bold } /* Keyword */
+.highlight .o { color: #666666 } /* Operator */
+.highlight .ch { color: #408080; font-style: italic } /* Comment.Hashbang */
+.highlight .cm { color: #408080; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #BC7A00 } /* Comment.Preproc */
+.highlight .cpf { color: #408080; font-style: italic } /* Comment.PreprocFile */
+.highlight .c1 { color: #408080; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #408080; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #A00000 } /* Generic.Deleted */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #FF0000 } /* Generic.Error */
+.highlight .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.highlight .gi { color: #00A000 } /* Generic.Inserted */
+.highlight .go { color: #888888 } /* Generic.Output */
+.highlight .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.highlight .gs { font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.highlight .gt { color: #0044DD } /* Generic.Traceback */
+.highlight .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.highlight .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.highlight .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.highlight .kp { color: #008000 } /* Keyword.Pseudo */
+.highlight .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.highlight .kt { color: #B00040 } /* Keyword.Type */
+.highlight .m { color: #666666 } /* Literal.Number */
+.highlight .s { color: #BA2121 } /* Literal.String */
+.highlight .na { color: #7D9029 } /* Name.Attribute */
+.highlight .nb { color: #008000 } /* Name.Builtin */
+.highlight .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+.highlight .no { color: #880000 } /* Name.Constant */
+.highlight .nd { color: #AA22FF } /* Name.Decorator */
+.highlight .ni { color: #999999; font-weight: bold } /* Name.Entity */
+.highlight .ne { color: #D2413A; font-weight: bold } /* Name.Exception */
+.highlight .nf { color: #0000FF } /* Name.Function */
+.highlight .nl { color: #A0A000 } /* Name.Label */
+.highlight .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+.highlight .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.highlight .nv { color: #19177C } /* Name.Variable */
+.highlight .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+.highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.highlight .mb { color: #666666 } /* Literal.Number.Bin */
+.highlight .mf { color: #666666 } /* Literal.Number.Float */
+.highlight .mh { color: #666666 } /* Literal.Number.Hex */
+.highlight .mi { color: #666666 } /* Literal.Number.Integer */
+.highlight .mo { color: #666666 } /* Literal.Number.Oct */
+.highlight .sa { color: #BA2121 } /* Literal.String.Affix */
+.highlight .sb { color: #BA2121 } /* Literal.String.Backtick */
+.highlight .sc { color: #BA2121 } /* Literal.String.Char */
+.highlight .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.highlight .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.highlight .s2 { color: #BA2121 } /* Literal.String.Double */
+.highlight .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
+.highlight .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.highlight .si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
+.highlight .sx { color: #008000 } /* Literal.String.Other */
+.highlight .sr { color: #BB6688 } /* Literal.String.Regex */
+.highlight .s1 { color: #BA2121 } /* Literal.String.Single */
+.highlight .ss { color: #19177C } /* Literal.String.Symbol */
+.highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.highlight .fm { color: #0000FF } /* Name.Function.Magic */
+.highlight .vc { color: #19177C } /* Name.Variable.Class */
+.highlight .vg { color: #19177C } /* Name.Variable.Global */
+.highlight .vi { color: #19177C } /* Name.Variable.Instance */
+.highlight .vm { color: #19177C } /* Name.Variable.Magic */
+.highlight .il { color: #666666 } /* Literal.Number.Integer.Long */</style>
+<style type="text/css">
+/* Temporary definitions which will become obsolete with Notebook release 5.0 */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+</style>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="https://nik-davis.github.io/images/steam_logo_white.jpg" alt="steam_logo"></p>
+<p>The first time I used Steam was with an account I can't remember the name of, playing a game which could well have been <a href="https://store.steampowered.com/app/2100/Dark_Messiah_of_Might__Magic/">Dark Messiah of Might &amp; Magic</a>, on a computer that would easily be blown away by the processing power of my phone today.</p>
+<p>It was sometime in 2006, when every game I bought came on a disk in a box that now gathers dust somewhere in my parents' house. Surprisingly my current PC has a disk drive, though I can't remember the last time used it.</p>
+<p>In order to play the multiplayer component of the game, I had to install an annoying piece of third-party software I had never heard of called Steam, creating the account I have long since lost in the process. Here's what that software probably looked like at the time:</p>
+<p><img src="https://nik-davis.github.io/images/steam_store_2006.jpg" width="700"></p>
+<center>Source: <a href=https://www.pcgamer.com/uk/steam-versions/>pcgamer</a></center><p>Fast-forward a little over 10 years and the <a href="https://en.wikipedia.org/wiki/Steam_(software">Steam store</a>) is huge, ubiquitous as the home of PC gaming and distribution. Whilst physical copies still just about feel at home on consoles, the PC market has long since moved digital. In case you are not familiar with it, Steam is a digital store for purchasing, downloading and playing video games. It hosts a variety of community features, allows pushing game updates to users automatically, and gathers news stories relevant to each title. It's a bit like <a href="https://play.google.com">Google's Play Store</a> or <a href="https://www.apple.com/uk/ios/app-store/">Apple's App Store</a> for phones.</p>
+<p>A large part of Steam's success as a platform is due to its use of freqeuent sales, convenience, and the shift to digital over physical. Whilst other platforms are emerging and gaining traction, there is likely no better resource for examining gaming over the last decade. With that in mind, if we can construct a data set we will have a wealth of information about <a href="https://store.steampowered.com/about/">nearly 30,000 games</a> released since 2003, when Steam first launched.</p>
+<h1 id="Project-Goals">Project Goals<a class="anchor-link" href="#Project-Goals">&#182;</a></h1><p>The motivation for this project is to download, process and analyse a data set of Steam apps (games) from the Steam store, and gain insights into what makes a game more successful in terms of sales, play-time and ratings. We will imagine that we have been approached by a company hoping to develop and release a new title, using the findings we provide them to inform decisions about how best to manage their budget and hopefully increase the success of their release.</p>
+<p>The first step will be tackling data collection - the actual retrieval of data from Steam's servers and databases. In future we'll look at cleaning the data, transforming it into a more useful state, then on to data exploration and analysis. Finally we'll summarise our findings in a non-technical report which would be sent to the fictional company in question.</p>
+<p>At the end of the data collection and cleaning stages, we'd like to end up with a table or database like this:</p>
+<table>
+<thead><tr>
+<th>name</th>
+<th>id</th>
+<th>information</th>
+<th>owners</th>
+<th>price</th>
+<th>rating</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>awesome game</td>
+<td>100</td>
+<td>genres, descriptors, variables</td>
+<td>100,000</td>
+<td>£9.99</td>
+<td>9/10</td>
+</tr>
+<tr>
+<td>generic shooter 4</td>
+<td>200</td>
+<td>definitely the best shooter</td>
+<td>50,000</td>
+<td>£39.99</td>
+<td>6/10</td>
+</tr>
+</tbody>
+</table>
+<p>We can then interrogate the data, and investigate whether particular attributes tend to correlate with more successful games. Metrics like ownership and ratings will help define the success of a title.</p>
+<p>There are a number of ways to get this information. Obviously we could search the web (and especially <a href="https://www.kaggle.com/datasets">kaggle</a>) for existing datasets, however to avoid letting someone else get away with all that hard work (and mainly for the purposes of learning) we'll be acquiring all the data ourselves from scratch.</p>
+<p>Usually when generating data the best place to start is to check for APIs. Fortunately Valve (the company behind Steam) make one available at <a href="https://partner.steamgames.com/">https://partner.steamgames.com/</a>. An <a href="https://en.wikipedia.org/wiki/Application_programming_interface">API</a> such as this one allows anyone to interface with data from a website in a controlled way, usually providing a host of useful features to the end-user and is typically a great way for developers to allow access to databases on their website. Unfortunately this documentation doesn't include all access points, but others have documented this for us. Particularly useful will be <a href="https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI">this</a> documentation of the StorefrontAPI.</p>
+<p>We'll be able to get good information about the details of each game from the Steam API, however we're still missing information about popularity and sales. Luckily we can easily get this data from another website, SteamSpy.</p>
+<p><a href="https://steamspy.com/about">SteamSpy</a> is a Steam stats-gathering service and crucially has data easily available through its own API (documentation <a href="https://steamspy.com/api.php">here</a>). It provides a number of useful metrics including an estimation for total owners of each game.</p>
+<p>We'll be retrieving data from both APIs and combining them to form our dataset. For the purposes of this project, we'll be performing as little data cleaning as possible at this stage, providing wonderfully dirty data for data cleaning, the next step in this project.</p>
+<h1 id="Section-outline:">Section outline:<a class="anchor-link" href="#Section-outline:">&#182;</a></h1><ul>
+<li>Create an app list from SteamSpy API using 'all' request</li>
+<li>Retrieve individual app data from Steam API, by iterating through app list</li>
+<li>Retrieve individual app data from SteamSpy API, by iterating through app list</li>
+<li>Export app list, Steam data and SteamSpy data to csv files</li>
+</ul>
+<h1 id="API-references:">API references:<a class="anchor-link" href="#API-references:">&#182;</a></h1><ul>
+<li><a href="https://partner.steamgames.com/doc/webapi/ISteamApps">https://partner.steamgames.com/doc/webapi/ISteamApps</a></li>
+<li><a href="https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI">https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI</a></li>
+<li><a href="https://steamapi.xpaw.me/#">https://steamapi.xpaw.me/#</a></li>
+<li><a href="https://steamspy.com/api.php">https://steamspy.com/api.php</a></li>
+</ul>
+<h1 id="Import-Libraries">Import Libraries<a class="anchor-link" href="#Import-Libraries">&#182;</a></h1><p>We begin by importing the libraries we will be using. We start with our <a href="https://docs.python.org/3/library/">standard library imports</a>, or those available by default in Python, then import our third-party packages. We'll be using <a href="https://2.python-requests.org/en/master/">requests</a> to handle interacting with the APIs, then the popular <a href="http://pandas.pydata.org/pandas-docs/stable/">pandas</a> and <a href="https://docs.scipy.org/doc/numpy/index.html">numpy</a> libraries for handling the downloaded data.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># standard library imports</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">datetime</span> <span class="k">as</span> <span class="nn">dt</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">statistics</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="c1"># third-party imports</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="c1"># customisations</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;max_columns&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Next, we define a general, all-purpose function to process get requests from an API, supplied through a URL parameter. A dictionary of parameters can be supplied which are passed into the get request automatically, depending on the requirements of the API.</p>
+<p>Rather than simply returning the response, we handle a couple of scenarios to help automation. Occasionally we encounter an SSL Error, in which case we simply wait a few seconds then try again (by recursively calling the function). When this happens, and generally throughout this project, we provide quite verbose feedback to show when these errors are encountered and how they are handled.</p>
+<p>Occasionally there is no response when a request is made (returns None). This usually happens when too many requests are made in a short period of time, and the polling limit has been reached. We try to avoid this by pausing briefly between requests, as we'll see later, but in case we breach the polling limit we wait 10 seconds then try again.</p>
+<p>Handling these errors in this way ensures that our function almost always returns the desired response, which we return in json format to make processing easier.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return json-formatted response of a get request using optional parameters.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url : string</span>
+<span class="sd">    parameters : {&#39;parameter&#39;: &#39;value&#39;}</span>
+<span class="sd">        parameters to pass as part of get request</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    json_data</span>
+<span class="sd">        json-formatted response (dict-like)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">SSLError</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;SSL Error:&#39;</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">Waiting... (</span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">Retrying.&#39;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span>
+        
+        <span class="c1"># recusively try again</span>
+        <span class="k">return</span> <span class="n">get_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">response</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># if response is none usually means too many requests. Wait and try again </span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No response, waiting 10 seconds...&#39;</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Retrying.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">get_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Generate-list-of-app-ids">Generate list of app ids<a class="anchor-link" href="#Generate-list-of-app-ids">&#182;</a></h1><p>Every app on the steam store has a unique app id. Whilst different apps can have the same name, they can't have the same id. This will be very useful to us for identifying apps and eventually merging our tables of data.</p>
+<p>Before we get to that, we need to generate a list of app ids which we can use to build our data sets. It's possible to generate one from the Steam API, however this has over 70,000 entries, many of which are demos and videos with no way to tell them apart. Instead, SteamSpy provides an 'all' request, supplying some information about all the apps they track. It doesn't supply all information about each app, so we still need to request this information individually, but it provides a good starting point.</p>
+<p>Because many of the return fields are strings containing commas and other punctuation, it is easiest to read the response into a pandas dataframe, and export the required appid and name fields to a csv. We could keep only the appid column as a list or pandas series, but it may be useful to keep the app name at this stage.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://steamspy.com/api.php&quot;</span>
+<span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;all&quot;</span><span class="p">}</span>
+
+<span class="c1"># request &#39;all&#39; from steam spy and parse into dataframe</span>
+<span class="n">json_data</span> <span class="o">=</span> <span class="n">get_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span>
+<span class="n">steam_spy_all</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">json_data</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+
+<span class="c1"># generate sorted app_list from steamspy data, to be used for retrieving individual app data from steam</span>
+<span class="n">app_list</span> <span class="o">=</span> <span class="n">steam_spy_all</span><span class="p">[[</span><span class="s1">&#39;appid&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;appid&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># export disabled to keep consistency across download sessions, instead read from stored csv</span>
+<span class="c1"># app_list.to_csv(&#39;../data/download/app_list.csv&#39;, index=False)</span>
+<span class="n">app_list</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../data/download/app_list.csv&#39;</span><span class="p">)</span>
+
+<span class="c1"># display first few rows</span>
+<span class="n">app_list</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[3]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>appid</th>
+      <th>name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>10</td>
+      <td>Counter-Strike</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>20</td>
+      <td>Team Fortress Classic</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>30</td>
+      <td>Day of Defeat</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>40</td>
+      <td>Deathmatch Classic</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>50</td>
+      <td>Half-Life: Opposing Force</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now we have our app dataframe, we can iterate over the app ids and request individual app data from the servers. Here we set out our logic to retrieve and process this information, then finally store the data as a csv file.</p>
+<p>Because it takes a long time to retrieve the data, it would be dangerous to attempt it all in one go as any errors or connection time-outs could cause the loss of all our data. For this reason we define a function to download and process the requests in batches, appending each batch to a file and keeping track of the highest index written in an external file.</p>
+<p>This not only provides security, allowing us to easily restart the process if an error is encountered, but also means we can complete the download across multiple sessions.</p>
+<p>Again, we provide verbose output for rows exported, batches complete, time taken and estimated time remaining.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_app_data</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">pause</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return list of app data generated from parser.</span>
+<span class="sd">    </span>
+<span class="sd">    parser : function to handle request</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    
+    <span class="n">app_data</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">app_list</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Current index: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">index</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)</span>
+        
+        <span class="n">appid</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;appid&#39;</span><span class="p">]</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">appid</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">app_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">pause</span><span class="p">)</span> <span class="c1"># prevent overloading api with requests</span>
+                
+    <span class="k">return</span> <span class="n">app_data</span>
+
+
+<span class="k">def</span> <span class="nf">process_batches</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">app_list</span><span class="p">,</span> <span class="n">download_path</span><span class="p">,</span> <span class="n">data_filename</span><span class="p">,</span> <span class="n">index_filename</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">begin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">batchsize</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">pause</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Process app data in batches for stability, appending directly to file.</span>
+<span class="sd">    </span>
+<span class="sd">    parser : custom function to format request</span>
+<span class="sd">    app_list : dataframe of appid and name</span>
+<span class="sd">    download_path : path to store data</span>
+<span class="sd">    data_filename : filename to save app data</span>
+<span class="sd">    index_filename : filename to store highest index written</span>
+<span class="sd">    columns : column names for file</span>
+<span class="sd">    </span>
+<span class="sd">    Keyword arguments:</span>
+<span class="sd">    </span>
+<span class="sd">    begin : starting index (get from index_filename, default 0)</span>
+<span class="sd">    end : index to finish (defaults to end of app_list)</span>
+<span class="sd">    batchsize : number of apps to write in each batch (default 100)</span>
+<span class="sd">    pause : time to wait after each api request (defualt 1)</span>
+<span class="sd">    </span>
+<span class="sd">    returns: none</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Starting at index </span><span class="si">{}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">begin</span><span class="p">))</span>
+    
+    <span class="k">if</span> <span class="n">end</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">app_list</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        
+    <span class="n">batches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">begin</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">batchsize</span><span class="p">)</span>
+    <span class="n">batches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batches</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+    
+    <span class="n">apps_written</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">batch_times</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">batches</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        
+        <span class="n">start</span> <span class="o">=</span> <span class="n">batches</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">batches</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="n">app_data</span> <span class="o">=</span> <span class="n">get_app_data</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">pause</span><span class="p">)</span>
+        
+        <span class="n">rel_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">data_filename</span><span class="p">)</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">rel_path</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span> <span class="n">extrasaction</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+            
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">About to write data, don&#39;t stop script! (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">j</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+            
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerows</span><span class="p">(</span><span class="n">app_data</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">Exported lines </span><span class="si">{}</span><span class="s1">-</span><span class="si">{}</span><span class="s1"> to </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">data_filename</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+            
+        <span class="n">apps_written</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">app_data</span><span class="p">)</span>
+        
+        <span class="n">idx_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">index_filename</span><span class="p">)</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">idx_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">stop</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+            
+        <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">time_taken</span> <span class="o">=</span> <span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span>
+        
+        <span class="n">batch_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time_taken</span><span class="p">)</span>
+        <span class="n">mean_time</span> <span class="o">=</span> <span class="n">statistics</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">batch_times</span><span class="p">)</span>
+        
+        <span class="n">est_remaining</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">batches</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">mean_time</span>
+        
+        <span class="n">remaining_td</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="n">est_remaining</span><span class="p">))</span>
+        <span class="n">time_td</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="n">time_taken</span><span class="p">))</span>
+        <span class="n">mean_td</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="n">mean_time</span><span class="p">))</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Batch </span><span class="si">{}</span><span class="s1"> time: </span><span class="si">{}</span><span class="s1"> (avg: </span><span class="si">{}</span><span class="s1">, remaining: </span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">time_td</span><span class="p">,</span> <span class="n">mean_td</span><span class="p">,</span> <span class="n">remaining_td</span><span class="p">))</span>
+            
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Processing batches complete. </span><span class="si">{}</span><span class="s1"> apps written&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">apps_written</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Finally, we define some functions to reset the index for testing and demonstration, retrieve the index from file (maintaining persistence across sessions) and prepare our csv file to store the data - this will clear the file if it exists and write a header row. This last function will only wipe the file if the retrieved index is 0.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">reset_index</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">index_filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reset index in file to 0&quot;&quot;&quot;</span>
+    <span class="n">rel_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">index_filename</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">rel_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+        
+
+<span class="k">def</span> <span class="nf">get_index</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">index_filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve index from file, returning 0 if file not found&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">rel_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">index_filename</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">rel_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+    
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+        
+    <span class="k">return</span> <span class="n">index</span>
+
+
+<span class="k">def</span> <span class="nf">prepare_data_file</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create file and write headers if index is 0&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">rel_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">rel_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writeheader</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Download-Steam-data">Download Steam data<a class="anchor-link" href="#Download-Steam-data">&#182;</a></h1><p>Now we are ready to start downloading data and writing to file. We define our logic particular to handling the steam API - in fact if no data is returned we return just the name and appid - then begin setting some parameters. We define the files we will write our data and index to, and the columns for the csv file. The API doesn't return every column for every app, so it is best to explicitly set these.</p>
+<p>Next we run our functions to set up our files, and make a call to <code>process_batches</code> to begin our process.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">parse_steam_request</span><span class="p">(</span><span class="n">appid</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unique parser to handle data from steam store api.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns : json formatted data (dict-like)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://store.steampowered.com/api/appdetails/&quot;</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;appids&quot;</span><span class="p">:</span> <span class="n">appid</span><span class="p">}</span>
+    
+    <span class="n">json_data</span> <span class="o">=</span> <span class="n">get_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span>
+    <span class="n">json_app_data</span> <span class="o">=</span> <span class="n">json_data</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">appid</span><span class="p">)]</span>
+    
+    <span class="k">if</span> <span class="n">json_app_data</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json_app_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s1">&#39;steam_appid&#39;</span><span class="p">:</span> <span class="n">appid</span><span class="p">}</span>
+        
+    <span class="k">return</span> <span class="n">data</span>
+
+
+<span class="c1"># Set file parameters</span>
+<span class="n">download_path</span> <span class="o">=</span> <span class="s1">&#39;../data/download&#39;</span>
+<span class="n">steam_app_data</span> <span class="o">=</span> <span class="s1">&#39;steam_app_data.csv&#39;</span>
+<span class="n">steam_index</span> <span class="o">=</span> <span class="s1">&#39;steam_index.txt&#39;</span>
+<span class="n">steam_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;steam_appid&#39;</span><span class="p">,</span> <span class="s1">&#39;required_age&#39;</span><span class="p">,</span> <span class="s1">&#39;is_free&#39;</span><span class="p">,</span> <span class="s1">&#39;controller_support&#39;</span><span class="p">,</span> <span class="s1">&#39;dlc&#39;</span><span class="p">,</span> <span class="s1">&#39;detailed_description&#39;</span><span class="p">,</span> <span class="s1">&#39;about_the_game&#39;</span><span class="p">,</span> <span class="s1">&#39;short_description&#39;</span><span class="p">,</span> <span class="s1">&#39;fullgame&#39;</span><span class="p">,</span> <span class="s1">&#39;supported_languages&#39;</span><span class="p">,</span> <span class="s1">&#39;header_image&#39;</span><span class="p">,</span> <span class="s1">&#39;website&#39;</span><span class="p">,</span> <span class="s1">&#39;pc_requirements&#39;</span><span class="p">,</span> <span class="s1">&#39;mac_requirements&#39;</span><span class="p">,</span> <span class="s1">&#39;linux_requirements&#39;</span><span class="p">,</span> <span class="s1">&#39;legal_notice&#39;</span><span class="p">,</span> <span class="s1">&#39;drm_notice&#39;</span><span class="p">,</span> <span class="s1">&#39;ext_user_account_notice&#39;</span><span class="p">,</span> <span class="s1">&#39;developers&#39;</span><span class="p">,</span> <span class="s1">&#39;publishers&#39;</span><span class="p">,</span> <span class="s1">&#39;demos&#39;</span><span class="p">,</span> <span class="s1">&#39;price_overview&#39;</span><span class="p">,</span> <span class="s1">&#39;packages&#39;</span><span class="p">,</span> <span class="s1">&#39;package_groups&#39;</span><span class="p">,</span> <span class="s1">&#39;platforms&#39;</span><span class="p">,</span> <span class="s1">&#39;metacritic&#39;</span><span class="p">,</span> <span class="s1">&#39;reviews&#39;</span><span class="p">,</span> <span class="s1">&#39;categories&#39;</span><span class="p">,</span> <span class="s1">&#39;genres&#39;</span><span class="p">,</span> <span class="s1">&#39;screenshots&#39;</span><span class="p">,</span> <span class="s1">&#39;movies&#39;</span><span class="p">,</span> <span class="s1">&#39;recommendations&#39;</span><span class="p">,</span> <span class="s1">&#39;achievements&#39;</span><span class="p">,</span> <span class="s1">&#39;release_date&#39;</span><span class="p">,</span> <span class="s1">&#39;support_info&#39;</span><span class="p">,</span> <span class="s1">&#39;background&#39;</span><span class="p">,</span> <span class="s1">&#39;content_descriptors&#39;</span><span class="p">]</span>
+
+<span class="c1"># Overwrites last index for demonstration (would usually store highest index so can continue across sessions)</span>
+<span class="n">reset_index</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">steam_index</span><span class="p">)</span>
+
+<span class="c1"># Retrieve last index downloaded from file</span>
+<span class="n">index</span> <span class="o">=</span> <span class="n">get_index</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">steam_index</span><span class="p">)</span>
+
+<span class="c1"># Wipe or create data file and write headers if index is 0</span>
+<span class="n">prepare_data_file</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">steam_app_data</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">steam_columns</span><span class="p">)</span>
+
+<span class="c1"># Set end and chunksize for demonstration - remove to run through entire app list</span>
+<span class="n">process_batches</span><span class="p">(</span>
+    <span class="n">parser</span><span class="o">=</span><span class="n">parse_steam_request</span><span class="p">,</span>
+    <span class="n">app_list</span><span class="o">=</span><span class="n">app_list</span><span class="p">,</span>
+    <span class="n">download_path</span><span class="o">=</span><span class="n">download_path</span><span class="p">,</span>
+    <span class="n">data_filename</span><span class="o">=</span><span class="n">steam_app_data</span><span class="p">,</span>
+    <span class="n">index_filename</span><span class="o">=</span><span class="n">steam_index</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="n">steam_columns</span><span class="p">,</span>
+    <span class="n">begin</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">batchsize</span><span class="o">=</span><span class="mi">5</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Starting at index 0:
+
+Exported lines 0-4 to steam_app_data.csv. Batch 0 time: 0:00:10 (avg: 0:00:10, remaining: 0:00:10)
+Exported lines 5-9 to steam_app_data.csv. Batch 1 time: 0:00:10 (avg: 0:00:10, remaining: 0:00:00)
+
+Processing batches complete. 10 apps written
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># inspect downloaded data</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../data/download/steam_app_data.csv&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[16]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>type</th>
+      <th>name</th>
+      <th>steam_appid</th>
+      <th>required_age</th>
+      <th>is_free</th>
+      <th>controller_support</th>
+      <th>dlc</th>
+      <th>detailed_description</th>
+      <th>about_the_game</th>
+      <th>short_description</th>
+      <th>fullgame</th>
+      <th>supported_languages</th>
+      <th>header_image</th>
+      <th>website</th>
+      <th>pc_requirements</th>
+      <th>mac_requirements</th>
+      <th>linux_requirements</th>
+      <th>legal_notice</th>
+      <th>drm_notice</th>
+      <th>ext_user_account_notice</th>
+      <th>developers</th>
+      <th>publishers</th>
+      <th>demos</th>
+      <th>price_overview</th>
+      <th>packages</th>
+      <th>package_groups</th>
+      <th>platforms</th>
+      <th>metacritic</th>
+      <th>reviews</th>
+      <th>categories</th>
+      <th>genres</th>
+      <th>screenshots</th>
+      <th>movies</th>
+      <th>recommendations</th>
+      <th>achievements</th>
+      <th>release_date</th>
+      <th>support_info</th>
+      <th>background</th>
+      <th>content_descriptors</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>game</td>
+      <td>Counter-Strike</td>
+      <td>10</td>
+      <td>0</td>
+      <td>False</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Play the world's number 1 online action game. ...</td>
+      <td>Play the world's number 1 online action game. ...</td>
+      <td>Play the world's number 1 online action game. ...</td>
+      <td>NaN</td>
+      <td>English&lt;strong&gt;*&lt;/strong&gt;, French&lt;strong&gt;*&lt;/st...</td>
+      <td>https://steamcdn-a.akamaihd.net/steam/apps/10/...</td>
+      <td>NaN</td>
+      <td>{'minimum': '\r\n\t\t\t&lt;p&gt;&lt;strong&gt;Minimum:&lt;/st...</td>
+      <td>{'minimum': 'Minimum: OS X  Snow Leopard 10.6....</td>
+      <td>{'minimum': 'Minimum: Linux Ubuntu 12.04, Dual...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>['Valve']</td>
+      <td>['Valve']</td>
+      <td>NaN</td>
+      <td>{'currency': 'GBP', 'initial': 719, 'final': 7...</td>
+      <td>[7]</td>
+      <td>[{'name': 'default', 'title': 'Buy Counter-Str...</td>
+      <td>{'windows': True, 'mac': True, 'linux': True}</td>
+      <td>{'score': 88, 'url': 'https://www.metacritic.c...</td>
+      <td>NaN</td>
+      <td>[{'id': 1, 'description': 'Multi-player'}, {'i...</td>
+      <td>[{'id': '1', 'description': 'Action'}]</td>
+      <td>[{'id': 0, 'path_thumbnail': 'https://steamcdn...</td>
+      <td>NaN</td>
+      <td>{'total': 66049}</td>
+      <td>{'total': 0}</td>
+      <td>{'coming_soon': False, 'date': '1 Nov, 2000'}</td>
+      <td>{'url': 'http://steamcommunity.com/app/10', 'e...</td>
+      <td>https://steamcdn-a.akamaihd.net/steam/apps/10/...</td>
+      <td>{'ids': [2, 5], 'notes': 'Includes intense vio...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>game</td>
+      <td>Team Fortress Classic</td>
+      <td>20</td>
+      <td>0</td>
+      <td>False</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>One of the most popular online action games of...</td>
+      <td>One of the most popular online action games of...</td>
+      <td>One of the most popular online action games of...</td>
+      <td>NaN</td>
+      <td>English, French, German, Italian, Spanish - Sp...</td>
+      <td>https://steamcdn-a.akamaihd.net/steam/apps/20/...</td>
+      <td>NaN</td>
+      <td>{'minimum': '\r\n\t\t\t&lt;p&gt;&lt;strong&gt;Minimum:&lt;/st...</td>
+      <td>{'minimum': 'Minimum: OS X  Snow Leopard 10.6....</td>
+      <td>{'minimum': 'Minimum: Linux Ubuntu 12.04, Dual...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>['Valve']</td>
+      <td>['Valve']</td>
+      <td>NaN</td>
+      <td>{'currency': 'GBP', 'initial': 399, 'final': 3...</td>
+      <td>[29]</td>
+      <td>[{'name': 'default', 'title': 'Buy Team Fortre...</td>
+      <td>{'windows': True, 'mac': True, 'linux': True}</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>[{'id': 1, 'description': 'Multi-player'}, {'i...</td>
+      <td>[{'id': '1', 'description': 'Action'}]</td>
+      <td>[{'id': 0, 'path_thumbnail': 'https://steamcdn...</td>
+      <td>NaN</td>
+      <td>{'total': 2807}</td>
+      <td>{'total': 0}</td>
+      <td>{'coming_soon': False, 'date': '1 Apr, 1999'}</td>
+      <td>{'url': '', 'email': ''}</td>
+      <td>https://steamcdn-a.akamaihd.net/steam/apps/20/...</td>
+      <td>{'ids': [2, 5], 'notes': 'Includes intense vio...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>game</td>
+      <td>Day of Defeat</td>
+      <td>30</td>
+      <td>0</td>
+      <td>False</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Enlist in an intense brand of Axis vs. Allied ...</td>
+      <td>Enlist in an intense brand of Axis vs. Allied ...</td>
+      <td>Enlist in an intense brand of Axis vs. Allied ...</td>
+      <td>NaN</td>
+      <td>English, French, German, Italian, Spanish - Spain</td>
+      <td>https://steamcdn-a.akamaihd.net/steam/apps/30/...</td>
+      <td>http://www.dayofdefeat.com/</td>
+      <td>{'minimum': '\r\n\t\t\t&lt;p&gt;&lt;strong&gt;Minimum:&lt;/st...</td>
+      <td>{'minimum': 'Minimum: OS X  Snow Leopard 10.6....</td>
+      <td>{'minimum': 'Minimum: Linux Ubuntu 12.04, Dual...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>['Valve']</td>
+      <td>['Valve']</td>
+      <td>NaN</td>
+      <td>{'currency': 'GBP', 'initial': 399, 'final': 3...</td>
+      <td>[30]</td>
+      <td>[{'name': 'default', 'title': 'Buy Day of Defe...</td>
+      <td>{'windows': True, 'mac': True, 'linux': True}</td>
+      <td>{'score': 79, 'url': 'https://www.metacritic.c...</td>
+      <td>NaN</td>
+      <td>[{'id': 1, 'description': 'Multi-player'}, {'i...</td>
+      <td>[{'id': '1', 'description': 'Action'}]</td>
+      <td>[{'id': 0, 'path_thumbnail': 'https://steamcdn...</td>
+      <td>NaN</td>
+      <td>{'total': 2000}</td>
+      <td>{'total': 0}</td>
+      <td>{'coming_soon': False, 'date': '1 May, 2003'}</td>
+      <td>{'url': '', 'email': ''}</td>
+      <td>https://steamcdn-a.akamaihd.net/steam/apps/30/...</td>
+      <td>{'ids': [], 'notes': None}</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>game</td>
+      <td>Deathmatch Classic</td>
+      <td>40</td>
+      <td>0</td>
+      <td>False</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Enjoy fast-paced multiplayer gaming with Death...</td>
+      <td>Enjoy fast-paced multiplayer gaming with Death...</td>
+      <td>Enjoy fast-paced multiplayer gaming with Death...</td>
+      <td>NaN</td>
+      <td>English, French, German, Italian, Spanish - Sp...</td>
+      <td>https://steamcdn-a.akamaihd.net/steam/apps/40/...</td>
+      <td>NaN</td>
+      <td>{'minimum': '\r\n\t\t\t&lt;p&gt;&lt;strong&gt;Minimum:&lt;/st...</td>
+      <td>{'minimum': 'Minimum: OS X  Snow Leopard 10.6....</td>
+      <td>{'minimum': 'Minimum: Linux Ubuntu 12.04, Dual...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>['Valve']</td>
+      <td>['Valve']</td>
+      <td>NaN</td>
+      <td>{'currency': 'GBP', 'initial': 399, 'final': 3...</td>
+      <td>[31]</td>
+      <td>[{'name': 'default', 'title': 'Buy Deathmatch ...</td>
+      <td>{'windows': True, 'mac': True, 'linux': True}</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>[{'id': 1, 'description': 'Multi-player'}, {'i...</td>
+      <td>[{'id': '1', 'description': 'Action'}]</td>
+      <td>[{'id': 0, 'path_thumbnail': 'https://steamcdn...</td>
+      <td>NaN</td>
+      <td>{'total': 940}</td>
+      <td>{'total': 0}</td>
+      <td>{'coming_soon': False, 'date': '1 Jun, 2001'}</td>
+      <td>{'url': '', 'email': ''}</td>
+      <td>https://steamcdn-a.akamaihd.net/steam/apps/40/...</td>
+      <td>{'ids': [], 'notes': None}</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>game</td>
+      <td>Half-Life: Opposing Force</td>
+      <td>50</td>
+      <td>0</td>
+      <td>False</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Return to the Black Mesa Research Facility as ...</td>
+      <td>Return to the Black Mesa Research Facility as ...</td>
+      <td>Return to the Black Mesa Research Facility as ...</td>
+      <td>NaN</td>
+      <td>English, French, German, Korean</td>
+      <td>https://steamcdn-a.akamaihd.net/steam/apps/50/...</td>
+      <td>NaN</td>
+      <td>{'minimum': '\r\n\t\t\t&lt;p&gt;&lt;strong&gt;Minimum:&lt;/st...</td>
+      <td>{'minimum': 'Minimum: OS X  Snow Leopard 10.6....</td>
+      <td>{'minimum': 'Minimum: Linux Ubuntu 12.04, Dual...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>['Gearbox Software']</td>
+      <td>['Valve']</td>
+      <td>NaN</td>
+      <td>{'currency': 'GBP', 'initial': 399, 'final': 3...</td>
+      <td>[32]</td>
+      <td>[{'name': 'default', 'title': 'Buy Half-Life: ...</td>
+      <td>{'windows': True, 'mac': True, 'linux': True}</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>[{'id': 2, 'description': 'Single-player'}, {'...</td>
+      <td>[{'id': '1', 'description': 'Action'}]</td>
+      <td>[{'id': 0, 'path_thumbnail': 'https://steamcdn...</td>
+      <td>NaN</td>
+      <td>{'total': 4388}</td>
+      <td>{'total': 0}</td>
+      <td>{'coming_soon': False, 'date': '1 Nov, 1999'}</td>
+      <td>{'url': 'https://help.steampowered.com', 'emai...</td>
+      <td>https://steamcdn-a.akamaihd.net/steam/apps/50/...</td>
+      <td>{'ids': [], 'notes': None}</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Download-SteamSpy-data">Download SteamSpy data<a class="anchor-link" href="#Download-SteamSpy-data">&#182;</a></h1><p>Now we have our steam data, we perform a very similar process to retrieve data from steamspy.</p>
+<p>Our parse function is a little simpler because of how data is returned, and the maximum polling rate of this API is higher so we can set <code>pause</code> lower and download faster. Apart from that we set our variables and run the <code>process_batches</code> function again.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">parse_steamspy_request</span><span class="p">(</span><span class="n">appid</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://steamspy.com/api.php&quot;</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;appdetails&quot;</span><span class="p">,</span> <span class="s2">&quot;appid&quot;</span><span class="p">:</span> <span class="n">appid</span><span class="p">}</span>
+    
+    <span class="n">json_data</span> <span class="o">=</span> <span class="n">get_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">json_data</span>
+
+
+<span class="c1"># set files and columns</span>
+<span class="n">download_path</span> <span class="o">=</span> <span class="s1">&#39;../data/download&#39;</span>
+<span class="n">steamspy_data</span> <span class="o">=</span> <span class="s1">&#39;steamspy_data.csv&#39;</span>
+<span class="n">steamspy_index</span> <span class="o">=</span> <span class="s1">&#39;steamspy_index.txt&#39;</span>
+<span class="n">steamspy_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;appid&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;developer&#39;</span><span class="p">,</span> <span class="s1">&#39;publisher&#39;</span><span class="p">,</span> <span class="s1">&#39;score_rank&#39;</span><span class="p">,</span> <span class="s1">&#39;positive&#39;</span><span class="p">,</span> <span class="s1">&#39;negative&#39;</span><span class="p">,</span> <span class="s1">&#39;userscore&#39;</span><span class="p">,</span> <span class="s1">&#39;owners&#39;</span><span class="p">,</span> <span class="s1">&#39;average_forever&#39;</span><span class="p">,</span> <span class="s1">&#39;average_2weeks&#39;</span><span class="p">,</span> <span class="s1">&#39;median_forever&#39;</span><span class="p">,</span> <span class="s1">&#39;median_2weeks&#39;</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">,</span> <span class="s1">&#39;initialprice&#39;</span><span class="p">,</span> <span class="s1">&#39;discount&#39;</span><span class="p">,</span> <span class="s1">&#39;languages&#39;</span><span class="p">,</span> <span class="s1">&#39;genre&#39;</span><span class="p">,</span> <span class="s1">&#39;ccu&#39;</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">]</span>
+            
+<span class="n">reset_index</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">steamspy_index</span><span class="p">)</span>
+<span class="n">index</span> <span class="o">=</span> <span class="n">get_index</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">steamspy_index</span><span class="p">)</span>
+
+<span class="c1"># Wipe data file if index is 0</span>
+<span class="n">prepare_data_file</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">steamspy_data</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">steamspy_columns</span><span class="p">)</span>
+
+<span class="n">process_batches</span><span class="p">(</span>
+    <span class="n">parser</span><span class="o">=</span><span class="n">parse_steamspy_request</span><span class="p">,</span>
+    <span class="n">app_list</span><span class="o">=</span><span class="n">app_list</span><span class="p">,</span>
+    <span class="n">download_path</span><span class="o">=</span><span class="n">download_path</span><span class="p">,</span> 
+    <span class="n">data_filename</span><span class="o">=</span><span class="n">steamspy_data</span><span class="p">,</span>
+    <span class="n">index_filename</span><span class="o">=</span><span class="n">steamspy_index</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="n">steamspy_columns</span><span class="p">,</span>
+    <span class="n">begin</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">batchsize</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">pause</span><span class="o">=</span><span class="mf">0.3</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Starting at index 0:
+
+Exported lines 0-4 to steamspy_data.csv. Batch 0 time: 0:00:04 (avg: 0:00:04, remaining: 0:00:11)
+Exported lines 5-9 to steamspy_data.csv. Batch 1 time: 0:00:04 (avg: 0:00:04, remaining: 0:00:07)
+Exported lines 10-14 to steamspy_data.csv. Batch 2 time: 0:00:04 (avg: 0:00:04, remaining: 0:00:04)
+Exported lines 15-19 to steamspy_data.csv. Batch 3 time: 0:00:04 (avg: 0:00:04, remaining: 0:00:00)
+
+Processing batches complete. 20 apps written
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># inspect downloaded steamspy data</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../data/download/steamspy_data.csv&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[14]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>appid</th>
+      <th>name</th>
+      <th>developer</th>
+      <th>publisher</th>
+      <th>score_rank</th>
+      <th>positive</th>
+      <th>negative</th>
+      <th>userscore</th>
+      <th>owners</th>
+      <th>average_forever</th>
+      <th>average_2weeks</th>
+      <th>median_forever</th>
+      <th>median_2weeks</th>
+      <th>price</th>
+      <th>initialprice</th>
+      <th>discount</th>
+      <th>languages</th>
+      <th>genre</th>
+      <th>ccu</th>
+      <th>tags</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>10</td>
+      <td>Counter-Strike</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>NaN</td>
+      <td>124948</td>
+      <td>3362</td>
+      <td>0</td>
+      <td>10,000,000 .. 20,000,000</td>
+      <td>12501</td>
+      <td>659</td>
+      <td>151</td>
+      <td>912</td>
+      <td>999</td>
+      <td>999</td>
+      <td>0</td>
+      <td>English, French, German, Italian, Spanish - Sp...</td>
+      <td>Action</td>
+      <td>14027</td>
+      <td>{'Action': 2683, 'FPS': 2050, 'Multiplayer': 1...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>20</td>
+      <td>Team Fortress Classic</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>NaN</td>
+      <td>3326</td>
+      <td>636</td>
+      <td>0</td>
+      <td>5,000,000 .. 10,000,000</td>
+      <td>35</td>
+      <td>0</td>
+      <td>10</td>
+      <td>0</td>
+      <td>499</td>
+      <td>499</td>
+      <td>0</td>
+      <td>English, French, German, Italian, Spanish - Sp...</td>
+      <td>Action</td>
+      <td>73</td>
+      <td>{'Action': 208, 'FPS': 188, 'Multiplayer': 172...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>30</td>
+      <td>Day of Defeat</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>NaN</td>
+      <td>3433</td>
+      <td>402</td>
+      <td>0</td>
+      <td>5,000,000 .. 10,000,000</td>
+      <td>138</td>
+      <td>0</td>
+      <td>58</td>
+      <td>0</td>
+      <td>499</td>
+      <td>499</td>
+      <td>0</td>
+      <td>English, French, German, Italian, Spanish - Spain</td>
+      <td>Action</td>
+      <td>100</td>
+      <td>{'FPS': 139, 'World War II': 123, 'Multiplayer...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>40</td>
+      <td>Deathmatch Classic</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>NaN</td>
+      <td>1282</td>
+      <td>271</td>
+      <td>0</td>
+      <td>5,000,000 .. 10,000,000</td>
+      <td>114</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>499</td>
+      <td>499</td>
+      <td>0</td>
+      <td>English, French, German, Italian, Spanish - Sp...</td>
+      <td>Action</td>
+      <td>3</td>
+      <td>{'Action': 85, 'FPS': 72, 'Multiplayer': 59, '...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>50</td>
+      <td>Half-Life: Opposing Force</td>
+      <td>Gearbox Software</td>
+      <td>Valve</td>
+      <td>NaN</td>
+      <td>5280</td>
+      <td>293</td>
+      <td>0</td>
+      <td>5,000,000 .. 10,000,000</td>
+      <td>611</td>
+      <td>0</td>
+      <td>241</td>
+      <td>0</td>
+      <td>499</td>
+      <td>499</td>
+      <td>0</td>
+      <td>English, French, German, Korean</td>
+      <td>Action</td>
+      <td>58</td>
+      <td>{'FPS': 236, 'Action': 211, 'Sci-fi': 166, 'Si...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Next-Steps">Next Steps<a class="anchor-link" href="#Next-Steps">&#182;</a></h1><p>We now have two tables of data with a variety of information about apps on the Steam store. From the Steam data it looks like we have some useful columns like <code>required_age</code>, <code>developers</code> and <code>genres</code> which we can eventually turn into features for analysis, and a <code>price_overview</code> column which may inform success and sales for the games. The <code>owners</code> column of the SteamSpy data will definitely be useful, as well as <code>positive</code> and <code>negative</code> ratings, <code>average_forever</code> and <code>median_forever</code> play time, and <code>tags</code> (descriptions on <a href="https://steamspy.com/api.php">API reference</a>).</p>
+<p>The tables certainly aren't in a usable state for analysis right now, requiring cleaning and preparing which we will take care of in the next step: data cleaning.</p>
+
+</div>
+</div>
+</div>
+ 
+
+
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['$','$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        " linebreaks: { automatic: true, width: '95% container' }, " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+        </div>
+
+        <div class="meta">
+            <div>
+                    <a href="https://nik-davis.github.io/tag/steam.html" class="tag">steam</a>
+                    <a href="https://nik-davis.github.io/tag/jupyter.html" class="tag">jupyter</a>
+                    <a href="https://nik-davis.github.io/tag/python.html" class="tag">python</a>
+                    <a href="https://nik-davis.github.io/tag/data.html" class="tag">data</a>
+            </div>
+        </div>
+    </article>
+</div>
+
+<link rel="stylesheet" type="text/css" href="/theme/css/ipynb.css"/>
+
+    </div>
+
+<!-- <footer>
+    <p>
+    © 2012-2017 Nik Davis, license <a href=""> </a>
+    unless otherwise noted.
+    Generated by <a href= "http://docs.getpelican.com/">Pelican</a>.
+    </p>
+</footer> -->
+
+</body>
+</html>
