@@ -43,60 +43,6 @@ nav {
       font-size: 16px;
       padding: 0 10px 0; }
 
-/*** Sections ***/
-/* Index */
-.index {
-  max-width: 900px; }
-  .index article header h2 {
-    font-size: 36px;
-    margin-bottom: 2px;
-    font-weight: 700; }
-    .index article header h2 a {
-      color: #000;
-      background: linear-gradient(to top, #222 1px, transparent 1px);
-      background-size: 0% 100%;
-      background-repeat: no-repeat;
-      background-position: center center;
-      padding-bottom: 2px;
-      transition: all 500ms ease;
-      text-decoration: none; }
-      .index article header h2 a:hover {
-        color: #5C881C;
-        background-size: 100% 100%;
-        text-decoration: none; }
-  .index .separator {
-    padding: 40px 0 0 0;
-    margin: 0 0 40px 0;
-    height: 10px;
-    border-bottom: solid 1px #CCC; }
-  .index .pagination {
-    display: block;
-    margin-bottom: 100px; }
-    .index .pagination ul {
-      text-align: center; }
-      .index .pagination ul li {
-        display: inline-block;
-        margin: 0 5px; }
-        .index .pagination ul li a {
-          color: #5C881C;
-          font-weight: bold;
-          padding: 8px 20px;
-          margin-left: 10px;
-          border: 2px solid #5C881C;
-          background-image: linear-gradient(to right, #FFF 50%, #5C881C 50%);
-          background-size: 200% 100%;
-          background-position: left bottom;
-          background-clip: padding-box;
-          transition: all 600ms ease; }
-          .index .pagination ul li a:hover {
-            background-position: right bottom;
-            color: #FFF; }
-          .index .pagination ul li a.right {
-            background-image: linear-gradient(to left, #FFF 50%, #5C881C 50%);
-            background-position: right bottom; }
-            .index .pagination ul li a.right:hover {
-              background-position: left bottom; }
-
 /* Article */
 article {
   margin: 0 auto; }
@@ -158,7 +104,7 @@ article {
   article li {
     font-size: 16px;
     line-height: 1.6em; }
-  article div.article_content p a {
+  article div.article_content a {
     color: #397aaf;
     text-decoration: none;
     background: linear-gradient(to top, #397aaf 1px, transparent 1px);
@@ -168,7 +114,7 @@ article {
     transition-property: color, background-size;
     transition-duration: 200ms;
     padding-bottom: 1px; }
-    article div.article_content p a:hover {
+    article div.article_content a:hover {
       text-decoration: none;
       background-size: 0% 100%;
       color: gray;
@@ -241,10 +187,95 @@ article {
       article .meta a.button:hover {
         color: #FFF;
         background-size: 100% 100%; }
+  article .archives {
+    width: 100%;
+    margin: 0;
+    padding: 0 0 30px 0;
+    list-style-type: none;
+    border-collapse: separate;
+    border-spacing: 0px 5px; }
+    article .archives .row {
+      margin: 8px 0; }
+      article .archives .row .title {
+        padding-left: 5px; }
+        article .archives .row .title a {
+          color: #222;
+          font-size: 1em;
+          text-decoration: none;
+          font-weight: normal;
+          background: linear-gradient(to top, #1a1a1a 1px, transparent 1px);
+          background-size: 0% 100%;
+          background-repeat: no-repeat;
+          background-position: center center;
+          padding-bottom: 1px;
+          transition: all 200ms ease; }
+          article .archives .row .title a:hover {
+            color: gray;
+            background-size: 100% 100%;
+            text-decoration: none; }
+      article .archives .row .date {
+        width: 60px;
+        text-align: right;
+        font-family: sans-serif;
+        color: #999;
+        font-size: 12px; }
+
+/*** Sections ***/
+/* Index */
+.index {
+  max-width: 900px; }
+  .index article header h2 {
+    font-size: 36px;
+    margin-bottom: 2px;
+    font-weight: 700; }
+    .index article header h2 a {
+      color: #000;
+      background: linear-gradient(to top, #222 1px, transparent 1px);
+      background-size: 0% 100%;
+      background-repeat: no-repeat;
+      background-position: center center;
+      padding-bottom: 2px;
+      transition: all 500ms ease;
+      text-decoration: none; }
+      .index article header h2 a:hover {
+        color: #5C881C;
+        background-size: 100% 100%;
+        text-decoration: none; }
+  .index .separator {
+    margin: 30px 0 40px 0;
+    height: 10px;
+    border-bottom: solid 1px #CCC; }
+  .index .pagination {
+    display: block;
+    margin-bottom: 100px; }
+    .index .pagination ul {
+      text-align: center; }
+      .index .pagination ul li {
+        display: inline-block;
+        margin: 0 5px; }
+        .index .pagination ul li a {
+          color: #5C881C;
+          font-weight: bold;
+          padding: 8px 20px;
+          margin-left: 10px;
+          border: 2px solid #5C881C;
+          background-image: linear-gradient(to right, #FFF 50%, #5C881C 50%);
+          background-size: 200% 100%;
+          background-position: left bottom;
+          background-clip: padding-box;
+          transition: all 600ms ease; }
+          .index .pagination ul li a:hover {
+            background-position: right bottom;
+            color: #FFF; }
+          .index .pagination ul li a.right {
+            background-image: linear-gradient(to left, #FFF 50%, #5C881C 50%);
+            background-position: right bottom; }
+            .index .pagination ul li a.right:hover {
+              background-position: left bottom; }
 
 /* Post */
 .post {
-  width: 100%; }
+  max-width: 900px; }
   .post h2:before {
     content: "# ";
     font-weight: bold;
@@ -261,35 +292,3 @@ article {
     margin: 50px 0 100px; }
 
 /* Tables */
-article .archives {
-  width: 100%;
-  margin: 0;
-  padding: 0 0 30px 0;
-  list-style-type: none;
-  border-collapse: separate;
-  border-spacing: 0px 5px; }
-  article .archives .row {
-    margin: 8px 0; }
-    article .archives .row .title {
-      padding-left: 5px; }
-      article .archives .row .title a {
-        color: #222;
-        font-size: 1em;
-        text-decoration: none;
-        font-weight: normal;
-        background: linear-gradient(to top, #1a1a1a 1px, transparent 1px);
-        background-size: 0% 100%;
-        background-repeat: no-repeat;
-        background-position: center center;
-        padding-bottom: 1px;
-        transition: all 200ms ease; }
-        article .archives .row .title a:hover {
-          color: gray;
-          background-size: 100% 100%;
-          text-decoration: none; }
-    article .archives .row .date {
-      width: 60px;
-      text-align: right;
-      font-family: sans-serif;
-      color: #999;
-      font-size: 12px; }

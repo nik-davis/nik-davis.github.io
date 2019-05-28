@@ -7,7 +7,7 @@
     <meta name="author" content="Nik Davis">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Steam Project - Part 1. Data collection | Nik Davis</title>
+    <title>Gathering Data from the Steam Store API | Nik Davis</title>
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -59,23 +59,51 @@
 <div class="container post">
     <article>
         <header>
-            <h1>Steam Project - Part 1. Data collection</h1>
-            <time datetime="article.date.isoformat()" pubdate>Thu 23 May 2019</time>
+            <h1>Gathering Data from the Steam Store API</h1>
+            <time datetime="article.date.isoformat()" pubdate>Tue 28 May 2019</time>
         </header>
 
         <div class="article_content">
-            <p>Part of a series, the rest can be viewed <a href="https://nik-davis.github.io/tag/steam.html">here</a>.</p>
+            <p><em>This post forms part of a larger series on downloading, processing and analysing data from the steam store. <a href="https://nik-davis.github.io/tag/steam.html">See all posts here</a>.</em></p>
 <p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><img src="https://nik-davis.github.io/images/steam_logo_white.jpg" alt="steam_logo"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <p>The first time I used Steam was with an account I can't remember the name of, playing a game which could well have been <a href="https://store.steampowered.com/app/2100/Dark_Messiah_of_Might__Magic/">Dark Messiah of Might &amp; Magic</a>, on a computer that would easily be blown away by the processing power of my phone today.</p>
 <p>It was sometime in 2006, when every game I bought came on a disk in a box that now gathers dust somewhere in my parents' house. Surprisingly my current PC has a disk drive, though I can't remember the last time used it.</p>
-<p>In order to play the multiplayer component of the game, I had to install an annoying piece of third-party software I had never heard of called Steam, creating the account I have long since lost in the process. Here's what that software probably looked like at the time:</p>
-<p class="source" style="text-align: center"><img src="https://nik-davis.github.io/images/steam_store_2006.jpg" width="700">Source: <a href="https://gfycat.com/@pcgevan">pcgevan</a> via <a href=https://www.pcgamer.com/uk/steam-versions/>PC Gamer</a></p><p>Fast-forward a little over 10 years and the <a href="https://en.wikipedia.org/wiki/Steam_(software)">Steam Store</a> is huge, ubiquitous as the home of PC gaming and distribution. Whilst physical copies still just about feel at home on consoles, the PC market has long since moved digital. In case you are not familiar with it, Steam is a digital store for purchasing, downloading and playing video games. It hosts a variety of community features, allows pushing game updates to users automatically, and gathers news stories relevant to each title. It's a bit like <a href="https://play.google.com">Google's Play Store</a> or <a href="https://www.apple.com/uk/ios/app-store/">Apple's App Store</a> for phones.</p>
-<p>A large part of Steam's success as a platform is due to its use of freqeuent sales, convenience, and the shift to digital over physical. Whilst other platforms are emerging and gaining traction, there is likely no better resource for examining gaming over the last decade. With that in mind, if we can construct a data set we will have a wealth of information about <a href="https://store.steampowered.com/about/">nearly 30,000 games</a> released since 2003, when Steam first launched.</p>
-<h1 id="Project-Goals">Project Goals<a class="anchor-link" href="#Project-Goals">&#182;</a></h1><!-- PELICAN_BEGIN_SUMMARY -->
+<p>In order to play the multiplayer component of the game, annoyingly I had to install a piece of third-party software I had never heard of called Steam, creating the account I have long since lost in the process. Here's what that software probably looked like at the time:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p class="source" style="text-align: center"><img src="https://nik-davis.github.io/images/steam_store_2006.jpg" width="700">Source: <a href="https://gfycat.com/@pcgevan">pcgevan</a> via <a href=https://www.pcgamer.com/uk/steam-versions/>PC Gamer</a></p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Fast-forward a little over 10 years and the <a href="https://en.wikipedia.org/wiki/Steam_(software)">Steam Store</a> is huge, ubiquitous as the home of PC gaming and distribution. Whilst physical copies still just about feel at home on consoles, the PC market has <a href="https://www.pcgamer.com/uk/analyst-says-digital-sales-made-up-92-percent-of-pc-game-market-in-2013/">long since moved digital</a>. In case you are not familiar, Steam is a digital store for purchasing, downloading and playing video games. It hosts a variety of community features, allows pushing game updates to users automatically, and gathers news stories relevant to each title. It's a bit like <a href="https://play.google.com">Google's Play Store</a> or <a href="https://www.apple.com/uk/ios/app-store/">Apple's App Store</a> for phones.</p>
+<p>A large part of Steam's success as a platform is due to its use of freqeuent sales, convenience as a unified digital game library, and the shift to digital over physical. Whilst other platforms are emerging and gaining traction, there is likely no better resource for examining gaming over the last decade. With that in mind, if we can construct a data set we will have a wealth of information about <a href="https://store.steampowered.com/about/">nearly 30,000 games</a> released since 2003, when Steam first launched.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Project-Goals">Project Goals<a class="anchor-link" href="#Project-Goals">&#182;</a></h2><!-- PELICAN_BEGIN_SUMMARY -->
 
 <p>The motivation for this project is to download, process and analyse a data set of Steam apps (games) from the Steam store, and gain insights into what makes a game more successful in terms of sales, play-time and ratings. We will imagine that we have been approached by a company hoping to develop and release a new title, using the findings we provide them to inform decisions about how best to manage their budget and hopefully increase the success of their release.</p>
 <p>The first step will be tackling data collection - the actual retrieval of data from Steam's servers and databases. In future we'll look at cleaning the data, transforming it into a more useful state, then on to data exploration and analysis. Finally we'll summarise our findings in a non-technical report which would be sent to the fictional company in question.</p>
@@ -109,34 +137,42 @@
 <td>£39.99</td>
 <td>6/10</td>
 </tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
 </tbody>
 </table>
-<p>We can then interrogate the data, and investigate whether particular attributes tend to correlate with more successful games. Metrics like ownership and ratings will help define the success of a title.</p>
-<p>There are a number of ways to get this information. Obviously we could search the web (and especially <a href="https://www.kaggle.com/datasets">kaggle</a>) for existing datasets, however to avoid letting someone else get away with all that hard work (and mainly for the purposes of learning) we'll be acquiring all the data ourselves from scratch.</p>
-<p>Usually when generating data the best place to start is to check for APIs. Fortunately Valve (the company behind Steam) make one available at <a href="https://partner.steamgames.com/">https://partner.steamgames.com/</a>. An <a href="https://en.wikipedia.org/wiki/Application_programming_interface">API</a> such as this one allows anyone to interface with data from a website in a controlled way, usually providing a host of useful features to the end-user and is typically a great way for developers to allow access to databases on their website. Unfortunately this documentation doesn't include all access points, but others have documented this for us. Particularly useful will be <a href="https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI">this</a> documentation of the StorefrontAPI.</p>
+<p>We can then interrogate the data, and investigate whether particular attributes tend to result in more successful games. Metrics like ownership and ratings should help define the success of a title.</p>
+<h2 id="Data-Acquisition">Data Acquisition<a class="anchor-link" href="#Data-Acquisition">&#182;</a></h2><p>There are a number of ways to get this information. Obviously we could search the web (and especially <a href="https://www.kaggle.com/datasets">kaggle</a>) for existing datasets, however to avoid letting someone else get away with all that hard work (and mainly for the purposes of learning) we'll be acquiring all the data ourselves from scratch.</p>
+<p>Often when generating data the best place to start is to check for APIs. Fortunately Valve (the company behind Steam) make one available at <a href="https://partner.steamgames.com/">https://partner.steamgames.com/</a>. An <a href="https://en.wikipedia.org/wiki/Application_programming_interface">API</a> such as this allows anyone to interface with data on a website in a controlled way, usually providing a host of useful features to the end-user. Typically an API is a great way for developers to allow access to databases and information on a server. Unfortunately this documentation doesn't include all access points, but others have documented this for us. <a href="https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI">This</a> documentation of the StorefrontAPI will be particularly useful.</p>
 <p>We'll be able to get good information about the details of each game from the Steam API, however we're still missing information about popularity and sales. Luckily we can easily get this data from another website, SteamSpy.</p>
 <p><a href="https://steamspy.com/about">SteamSpy</a> is a Steam stats-gathering service and crucially has data easily available through its own API (documentation <a href="https://steamspy.com/api.php">here</a>). It provides a number of useful metrics including an estimation for total owners of each game.</p>
 <p>We'll be retrieving data from both APIs and combining them to form our dataset. For the purposes of this project, we'll be performing as little data cleaning as possible at this stage, providing wonderfully dirty data for data cleaning, the next step in this project.</p>
-<h1 id="Section-outline:">Section outline:<a class="anchor-link" href="#Section-outline:">&#182;</a></h1><ul>
+<h2 id="Section-outline:">Section outline:<a class="anchor-link" href="#Section-outline:">&#182;</a></h2><ul>
 <li>Create an app list from SteamSpy API using 'all' request</li>
 <li>Retrieve individual app data from Steam API, by iterating through app list</li>
 <li>Retrieve individual app data from SteamSpy API, by iterating through app list</li>
 <li>Export app list, Steam data and SteamSpy data to csv files</li>
 </ul>
-<h1 id="API-references:">API references:<a class="anchor-link" href="#API-references:">&#182;</a></h1><ul>
-<li><a href="https://partner.steamgames.com/doc/webapi/ISteamApps">https://partner.steamgames.com/doc/webapi/ISteamApps</a></li>
+<h2 id="API-references:">API references:<a class="anchor-link" href="#API-references:">&#182;</a></h2><ul>
+<li><a href="https://partner.steamgames.com/doc/webapi">https://partner.steamgames.com/doc/webapi</a></li>
 <li><a href="https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI">https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI</a></li>
 <li><a href="https://steamapi.xpaw.me/#">https://steamapi.xpaw.me/#</a></li>
 <li><a href="https://steamspy.com/api.php">https://steamspy.com/api.php</a></li>
 </ul>
-<h1 id="Import-Libraries">Import Libraries<a class="anchor-link" href="#Import-Libraries">&#182;</a></h1><p>We begin by importing the libraries we will be using. We start with our <a href="https://docs.python.org/3/library/">standard library imports</a>, or those available by default in Python, then import our third-party packages. We'll be using <a href="https://2.python-requests.org/en/master/">requests</a> to handle interacting with the APIs, then the popular <a href="http://pandas.pydata.org/pandas-docs/stable/">pandas</a> and <a href="https://docs.scipy.org/doc/numpy/index.html">numpy</a> libraries for handling the downloaded data.</p>
+<h2 id="Import-Libraries">Import Libraries<a class="anchor-link" href="#Import-Libraries">&#182;</a></h2><p>We begin by importing the libraries we will be using. We start with <a href="https://docs.python.org/3/library/">standard library imports</a>, or those available by default in Python, then import the third-party packages. We'll be using <a href="https://2.python-requests.org/en/master/">requests</a> to handle interacting with the APIs, then the popular <a href="http://pandas.pydata.org/pandas-docs/stable/">pandas</a> and <a href="https://docs.scipy.org/doc/numpy/index.html">numpy</a> libraries for handling the downloaded data.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># standard library imports</span>
@@ -174,7 +210,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -222,8 +258,8 @@
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Generate-list-of-app-ids">Generate list of app ids<a class="anchor-link" href="#Generate-list-of-app-ids">&#182;</a></h1><p>Every app on the steam store has a unique app id. Whilst different apps can have the same name, they can't have the same id. This will be very useful to us for identifying apps and eventually merging our tables of data.</p>
-<p>Before we get to that, we need to generate a list of app ids which we can use to build our data sets. It's possible to generate one from the Steam API, however this has over 70,000 entries, many of which are demos and videos with no way to tell them apart. Instead, SteamSpy provides an 'all' request, supplying some information about all the apps they track. It doesn't supply all information about each app, so we still need to request this information individually, but it provides a good starting point.</p>
+<h2 id="Generate-list-of-app-ids">Generate list of app ids<a class="anchor-link" href="#Generate-list-of-app-ids">&#182;</a></h2><p>Every app on the steam store has a unique app id. Whilst different apps can have the same name, they can't have the same id. This will be very useful to us for identifying apps and eventually merging our tables of data.</p>
+<p>Before we get to that, we need to generate a list of app ids which we can use to build our data sets. It's possible to generate one from the Steam API, however this has over 70,000 entries, many of which are demos and videos with no way to tell them apart. Instead, SteamSpy provides an 'all' request, supplying some information about the apps they track. It doesn't supply all information about each app, so we still need to request this information individually, but it provides a good starting point.</p>
 <p>Because many of the return fields are strings containing commas and other punctuation, it is easiest to read the response into a pandas dataframe, and export the required appid and name fields to a csv. We could keep only the appid column as a list or pandas series, but it may be useful to keep the app name at this stage.</p>
 
 </div>
@@ -231,7 +267,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://steamspy.com/api.php&quot;</span>
@@ -262,7 +298,7 @@
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[3]:</div>
+    <div class="prompt output_prompt">Out[2]:</div>
 
 
 
@@ -329,7 +365,7 @@
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Now we have our app dataframe, we can iterate over the app ids and request individual app data from the servers. Here we set out our logic to retrieve and process this information, then finally store the data as a csv file.</p>
+<h2 id="Define-download-logic">Define download logic<a class="anchor-link" href="#Define-download-logic">&#182;</a></h2><p>Now we have our app dataframe, we can iterate over the app ids and request individual app data from the servers. Here we set out our logic to retrieve and process this information, then finally store the data as a csv file.</p>
 <p>Because it takes a long time to retrieve the data, it would be dangerous to attempt it all in one go as any errors or connection time-outs could cause the loss of all our data. For this reason we define a function to download and process the requests in batches, appending each batch to a file and keeping track of the highest index written in an external file.</p>
 <p>This not only provides security, allowing us to easily restart the process if an error is encountered, but also means we can complete the download across multiple sessions.</p>
 <p>Again, we provide verbose output for rows exported, batches complete, time taken and estimated time remaining.</p>
@@ -339,33 +375,34 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_app_data</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">pause</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return list of app data generated from parser.</span>
 <span class="sd">    </span>
 <span class="sd">    parser : function to handle request</span>
-<span class="sd">    &quot;&quot;&quot;</span>    
-    
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">app_data</span> <span class="o">=</span> <span class="p">[]</span>
-
+    
+    <span class="c1"># iterate through each row of app_list, confined by start and stop</span>
     <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">app_list</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Current index: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">index</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)</span>
         
         <span class="n">appid</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;appid&#39;</span><span class="p">]</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
 
+        <span class="c1"># retrive app data for a row, handled by supplied parser, and append to list</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">appid</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="n">app_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">pause</span><span class="p">)</span> <span class="c1"># prevent overloading api with requests</span>
-                
+    
     <span class="k">return</span> <span class="n">app_data</span>
 
 
 <span class="k">def</span> <span class="nf">process_batches</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">app_list</span><span class="p">,</span> <span class="n">download_path</span><span class="p">,</span> <span class="n">data_filename</span><span class="p">,</span> <span class="n">index_filename</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">begin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">batchsize</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">pause</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Process app data in batches for stability, appending directly to file.</span>
+    <span class="sd">&quot;&quot;&quot;Process app data in batches, writing directly to file.</span>
 <span class="sd">    </span>
 <span class="sd">    parser : custom function to format request</span>
 <span class="sd">    app_list : dataframe of appid and name</span>
@@ -383,12 +420,13 @@
 <span class="sd">    </span>
 <span class="sd">    returns: none</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Starting at index </span><span class="si">{}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">begin</span><span class="p">))</span>
     
+    <span class="c1"># by default, process all apps in app_list</span>
     <span class="k">if</span> <span class="n">end</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
         <span class="n">end</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">app_list</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-        
+    
+    <span class="c1"># generate array of batch begin and end points</span>
     <span class="n">batches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">begin</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">batchsize</span><span class="p">)</span>
     <span class="n">batches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batches</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
     
@@ -405,6 +443,7 @@
         
         <span class="n">rel_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">data_filename</span><span class="p">)</span>
         
+        <span class="c1"># writing app data to file</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">rel_path</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span> <span class="n">extrasaction</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
             
@@ -419,10 +458,12 @@
         
         <span class="n">idx_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">index_filename</span><span class="p">)</span>
         
+        <span class="c1"># writing last index to file</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">idx_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">index</span> <span class="o">=</span> <span class="n">stop</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
             
+        <span class="c1"># logging time taken</span>
         <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">time_taken</span> <span class="o">=</span> <span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span>
         
@@ -448,25 +489,29 @@
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Finally, we define some functions to reset the index for testing and demonstration, retrieve the index from file (maintaining persistence across sessions) and prepare our csv file to store the data - this will clear the file if it exists and write a header row. This last function will only wipe the file if the retrieved index is 0.</p>
+<p>Finally, we define some functions to handle and prepare the external files.</p>
+<p>We use <code>reset_index</code> for testing and demonstration, allowing us to easily reset the index in the stored file to 0, effectively restarting the entire download process.</p>
+<p>We define <code>get_index</code> to retrieve the index from file, maintaining persistence across sessions. Every time a batch of information (app data) is written to file, we write the highest index within <code>app_data</code> that was retrieved. As stated, this is partially for security, ensuring that if there is an error during the download we can read the index from file and continue from the end of the last successful batch. Keeping track of the index also allows us to pause the download, continuing at a later time.</p>
+<p>Finally, the <code>prepare_data_file</code> function readies the csv for storing the data. If the index we retrieved is 0, it means we are either starting for the first time or starting over. In either case, we want a blank csv file with only the header row to begin writing to, se we wipe the file (by opening in write mode) and write the header. Conversely, if the index is anything other than 0 it means we already have downloaded information, and can leave the csv file alone.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">reset_index</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">index_filename</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Reset index in file to 0&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Reset index in file to 0.&quot;&quot;&quot;</span>
     <span class="n">rel_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">index_filename</span><span class="p">)</span>
+    
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">rel_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
         
 
 <span class="k">def</span> <span class="nf">get_index</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">index_filename</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Retrieve index from file, returning 0 if file not found&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve index from file, returning 0 if file not found.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">rel_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">index_filename</span><span class="p">)</span>
 
@@ -480,7 +525,7 @@
 
 
 <span class="k">def</span> <span class="nf">prepare_data_file</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Create file and write headers if index is 0&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Create file and write headers if index is 0.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">rel_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
 
@@ -497,15 +542,15 @@
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Download-Steam-data">Download Steam data<a class="anchor-link" href="#Download-Steam-data">&#182;</a></h1><p>Now we are ready to start downloading data and writing to file. We define our logic particular to handling the steam API - in fact if no data is returned we return just the name and appid - then begin setting some parameters. We define the files we will write our data and index to, and the columns for the csv file. The API doesn't return every column for every app, so it is best to explicitly set these.</p>
-<p>Next we run our functions to set up our files, and make a call to <code>process_batches</code> to begin our process.</p>
+<h2 id="Download-Steam-data">Download Steam data<a class="anchor-link" href="#Download-Steam-data">&#182;</a></h2><p>Now we are ready to start downloading data and writing to file. We define our logic particular to handling the steam API - in fact if no data is returned we return just the name and appid - then begin setting some parameters. We define the files we will write our data and index to, and the columns for the csv file. The API doesn't return every column for every app, so it is best to explicitly set these.</p>
+<p>Next we run our functions to set up the files, and make a call to <code>process_batches</code> to begin the process. Some additional parameters have been added for demonstration, to constrain the download to just a few rows and smaller batches. Removing these would allow the entire download process to be repeated.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">parse_steam_request</span><span class="p">(</span><span class="n">appid</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
@@ -531,7 +576,13 @@
 <span class="n">download_path</span> <span class="o">=</span> <span class="s1">&#39;../data/download&#39;</span>
 <span class="n">steam_app_data</span> <span class="o">=</span> <span class="s1">&#39;steam_app_data.csv&#39;</span>
 <span class="n">steam_index</span> <span class="o">=</span> <span class="s1">&#39;steam_index.txt&#39;</span>
-<span class="n">steam_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;steam_appid&#39;</span><span class="p">,</span> <span class="s1">&#39;required_age&#39;</span><span class="p">,</span> <span class="s1">&#39;is_free&#39;</span><span class="p">,</span> <span class="s1">&#39;controller_support&#39;</span><span class="p">,</span> <span class="s1">&#39;dlc&#39;</span><span class="p">,</span> <span class="s1">&#39;detailed_description&#39;</span><span class="p">,</span> <span class="s1">&#39;about_the_game&#39;</span><span class="p">,</span> <span class="s1">&#39;short_description&#39;</span><span class="p">,</span> <span class="s1">&#39;fullgame&#39;</span><span class="p">,</span> <span class="s1">&#39;supported_languages&#39;</span><span class="p">,</span> <span class="s1">&#39;header_image&#39;</span><span class="p">,</span> <span class="s1">&#39;website&#39;</span><span class="p">,</span> <span class="s1">&#39;pc_requirements&#39;</span><span class="p">,</span> <span class="s1">&#39;mac_requirements&#39;</span><span class="p">,</span> <span class="s1">&#39;linux_requirements&#39;</span><span class="p">,</span> <span class="s1">&#39;legal_notice&#39;</span><span class="p">,</span> <span class="s1">&#39;drm_notice&#39;</span><span class="p">,</span> <span class="s1">&#39;ext_user_account_notice&#39;</span><span class="p">,</span> <span class="s1">&#39;developers&#39;</span><span class="p">,</span> <span class="s1">&#39;publishers&#39;</span><span class="p">,</span> <span class="s1">&#39;demos&#39;</span><span class="p">,</span> <span class="s1">&#39;price_overview&#39;</span><span class="p">,</span> <span class="s1">&#39;packages&#39;</span><span class="p">,</span> <span class="s1">&#39;package_groups&#39;</span><span class="p">,</span> <span class="s1">&#39;platforms&#39;</span><span class="p">,</span> <span class="s1">&#39;metacritic&#39;</span><span class="p">,</span> <span class="s1">&#39;reviews&#39;</span><span class="p">,</span> <span class="s1">&#39;categories&#39;</span><span class="p">,</span> <span class="s1">&#39;genres&#39;</span><span class="p">,</span> <span class="s1">&#39;screenshots&#39;</span><span class="p">,</span> <span class="s1">&#39;movies&#39;</span><span class="p">,</span> <span class="s1">&#39;recommendations&#39;</span><span class="p">,</span> <span class="s1">&#39;achievements&#39;</span><span class="p">,</span> <span class="s1">&#39;release_date&#39;</span><span class="p">,</span> <span class="s1">&#39;support_info&#39;</span><span class="p">,</span> <span class="s1">&#39;background&#39;</span><span class="p">,</span> <span class="s1">&#39;content_descriptors&#39;</span><span class="p">]</span>
+<span class="n">steam_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;steam_appid&#39;</span><span class="p">,</span> <span class="s1">&#39;required_age&#39;</span><span class="p">,</span> <span class="s1">&#39;is_free&#39;</span><span class="p">,</span> <span class="s1">&#39;controller_support&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;dlc&#39;</span><span class="p">,</span> <span class="s1">&#39;detailed_description&#39;</span><span class="p">,</span> <span class="s1">&#39;about_the_game&#39;</span><span class="p">,</span> <span class="s1">&#39;short_description&#39;</span><span class="p">,</span> <span class="s1">&#39;fullgame&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;supported_languages&#39;</span><span class="p">,</span> <span class="s1">&#39;header_image&#39;</span><span class="p">,</span> <span class="s1">&#39;website&#39;</span><span class="p">,</span> <span class="s1">&#39;pc_requirements&#39;</span><span class="p">,</span> <span class="s1">&#39;mac_requirements&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;linux_requirements&#39;</span><span class="p">,</span> <span class="s1">&#39;legal_notice&#39;</span><span class="p">,</span> <span class="s1">&#39;drm_notice&#39;</span><span class="p">,</span> <span class="s1">&#39;ext_user_account_notice&#39;</span><span class="p">,</span> <span class="s1">&#39;developers&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;publishers&#39;</span><span class="p">,</span> <span class="s1">&#39;demos&#39;</span><span class="p">,</span> <span class="s1">&#39;price_overview&#39;</span><span class="p">,</span> <span class="s1">&#39;packages&#39;</span><span class="p">,</span> <span class="s1">&#39;package_groups&#39;</span><span class="p">,</span> <span class="s1">&#39;platforms&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;metacritic&#39;</span><span class="p">,</span> <span class="s1">&#39;reviews&#39;</span><span class="p">,</span> <span class="s1">&#39;categories&#39;</span><span class="p">,</span> <span class="s1">&#39;genres&#39;</span><span class="p">,</span> <span class="s1">&#39;screenshots&#39;</span><span class="p">,</span> <span class="s1">&#39;movies&#39;</span><span class="p">,</span> <span class="s1">&#39;recommendations&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;achievements&#39;</span><span class="p">,</span> <span class="s1">&#39;release_date&#39;</span><span class="p">,</span> <span class="s1">&#39;support_info&#39;</span><span class="p">,</span> <span class="s1">&#39;background&#39;</span><span class="p">,</span> <span class="s1">&#39;content_descriptors&#39;</span><span class="p">]</span>
 
 <span class="c1"># Overwrites last index for demonstration (would usually store highest index so can continue across sessions)</span>
 <span class="n">reset_index</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">steam_index</span><span class="p">)</span>
@@ -560,33 +611,10 @@
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Starting at index 0:
-
-Exported lines 0-4 to steam_app_data.csv. Batch 0 time: 0:00:10 (avg: 0:00:10, remaining: 0:00:10)
-Exported lines 5-9 to steam_app_data.csv. Batch 1 time: 0:00:10 (avg: 0:00:10, remaining: 0:00:00)
-
-Processing batches complete. 10 apps written
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># inspect downloaded data</span>
@@ -603,7 +631,7 @@ Processing batches complete. 10 apps written
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[16]:</div>
+    <div class="prompt output_prompt">Out[3]:</div>
 
 
 
@@ -892,18 +920,19 @@ Processing batches complete. 10 apps written
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Download-SteamSpy-data">Download SteamSpy data<a class="anchor-link" href="#Download-SteamSpy-data">&#182;</a></h1><p>Now we have our steam data, we perform a very similar process to retrieve data from steamspy.</p>
-<p>Our parse function is a little simpler because of how data is returned, and the maximum polling rate of this API is higher so we can set <code>pause</code> lower and download faster. Apart from that we set our variables and run the <code>process_batches</code> function again.</p>
+<h2 id="Download-SteamSpy-data">Download SteamSpy data<a class="anchor-link" href="#Download-SteamSpy-data">&#182;</a></h2><p>Now we have our steam data, we perform a very similar process to retrieve data from steamspy.</p>
+<p>Our parse function is a little simpler because of how data is returned, and the maximum polling rate of this API is higher so we can set a lower value for <code>pause</code> in the <code>process_batches</code> function and download more quickly. Apart from that we set the new variables and make a call to the <code>process_batches</code> function once again.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">parse_steamspy_request</span><span class="p">(</span><span class="n">appid</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parser to handle steamspy api data.&quot;&quot;&quot;</span>
     <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://steamspy.com/api.php&quot;</span>
     <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;appdetails&quot;</span><span class="p">,</span> <span class="s2">&quot;appid&quot;</span><span class="p">:</span> <span class="n">appid</span><span class="p">}</span>
     
@@ -915,7 +944,9 @@ Processing batches complete. 10 apps written
 <span class="n">download_path</span> <span class="o">=</span> <span class="s1">&#39;../data/download&#39;</span>
 <span class="n">steamspy_data</span> <span class="o">=</span> <span class="s1">&#39;steamspy_data.csv&#39;</span>
 <span class="n">steamspy_index</span> <span class="o">=</span> <span class="s1">&#39;steamspy_index.txt&#39;</span>
-<span class="n">steamspy_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;appid&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;developer&#39;</span><span class="p">,</span> <span class="s1">&#39;publisher&#39;</span><span class="p">,</span> <span class="s1">&#39;score_rank&#39;</span><span class="p">,</span> <span class="s1">&#39;positive&#39;</span><span class="p">,</span> <span class="s1">&#39;negative&#39;</span><span class="p">,</span> <span class="s1">&#39;userscore&#39;</span><span class="p">,</span> <span class="s1">&#39;owners&#39;</span><span class="p">,</span> <span class="s1">&#39;average_forever&#39;</span><span class="p">,</span> <span class="s1">&#39;average_2weeks&#39;</span><span class="p">,</span> <span class="s1">&#39;median_forever&#39;</span><span class="p">,</span> <span class="s1">&#39;median_2weeks&#39;</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">,</span> <span class="s1">&#39;initialprice&#39;</span><span class="p">,</span> <span class="s1">&#39;discount&#39;</span><span class="p">,</span> <span class="s1">&#39;languages&#39;</span><span class="p">,</span> <span class="s1">&#39;genre&#39;</span><span class="p">,</span> <span class="s1">&#39;ccu&#39;</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">]</span>
+<span class="n">steamspy_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;appid&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;developer&#39;</span><span class="p">,</span> <span class="s1">&#39;publisher&#39;</span><span class="p">,</span> <span class="s1">&#39;score_rank&#39;</span><span class="p">,</span> <span class="s1">&#39;positive&#39;</span><span class="p">,</span> <span class="s1">&#39;negative&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;userscore&#39;</span><span class="p">,</span> <span class="s1">&#39;owners&#39;</span><span class="p">,</span> <span class="s1">&#39;average_forever&#39;</span><span class="p">,</span> <span class="s1">&#39;average_2weeks&#39;</span><span class="p">,</span> <span class="s1">&#39;median_forever&#39;</span><span class="p">,</span> <span class="s1">&#39;median_2weeks&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;price&#39;</span><span class="p">,</span> <span class="s1">&#39;initialprice&#39;</span><span class="p">,</span> <span class="s1">&#39;discount&#39;</span><span class="p">,</span> <span class="s1">&#39;languages&#39;</span><span class="p">,</span> <span class="s1">&#39;genre&#39;</span><span class="p">,</span> <span class="s1">&#39;ccu&#39;</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">]</span>
             
 <span class="n">reset_index</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">steamspy_index</span><span class="p">)</span>
 <span class="n">index</span> <span class="o">=</span> <span class="n">get_index</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="n">steamspy_index</span><span class="p">)</span>
@@ -941,35 +972,10 @@ Processing batches complete. 10 apps written
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Starting at index 0:
-
-Exported lines 0-4 to steamspy_data.csv. Batch 0 time: 0:00:04 (avg: 0:00:04, remaining: 0:00:11)
-Exported lines 5-9 to steamspy_data.csv. Batch 1 time: 0:00:04 (avg: 0:00:04, remaining: 0:00:07)
-Exported lines 10-14 to steamspy_data.csv. Batch 2 time: 0:00:04 (avg: 0:00:04, remaining: 0:00:04)
-Exported lines 15-19 to steamspy_data.csv. Batch 3 time: 0:00:04 (avg: 0:00:04, remaining: 0:00:00)
-
-Processing batches complete. 20 apps written
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># inspect downloaded steamspy data</span>
@@ -986,7 +992,7 @@ Processing batches complete. 20 apps written
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[14]:</div>
+    <div class="prompt output_prompt">Out[4]:</div>
 
 
 
@@ -1161,7 +1167,7 @@ Processing batches complete. 20 apps written
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Next-Steps">Next Steps<a class="anchor-link" href="#Next-Steps">&#182;</a></h1><p>We now have two tables of data with a variety of information about apps on the Steam store. From the Steam data it looks like we have some useful columns like <code>required_age</code>, <code>developers</code> and <code>genres</code> which we can eventually turn into features for analysis, and a <code>price_overview</code> column which may inform success and sales for the games. The <code>owners</code> column of the SteamSpy data will definitely be useful, as well as <code>positive</code> and <code>negative</code> ratings, <code>average_forever</code> and <code>median_forever</code> play time, and <code>tags</code> (descriptions on <a href="https://steamspy.com/api.php">API reference</a>).</p>
+<h2 id="Next-Steps">Next Steps<a class="anchor-link" href="#Next-Steps">&#182;</a></h2><p>We now have two tables of data with a variety of information about apps on the Steam store. From the Steam data it looks like we have some useful columns like <code>required_age</code>, <code>developers</code> and <code>genres</code> which we can eventually turn into features for analysis, and a <code>price_overview</code> column which may inform the success and sales of each game. The <code>owners</code> column of the SteamSpy data will definitely be useful, as well as <code>positive</code> and <code>negative</code> ratings, <code>average_forever</code> and <code>median_forever</code> play time, and <code>tags</code> (descriptions on <a href="https://steamspy.com/api.php">API reference</a>).</p>
 <p>The tables certainly aren't in a usable state for analysis right now, requiring cleaning and preparing which we will take care of in the next step: data cleaning.</p>
 
 </div>
