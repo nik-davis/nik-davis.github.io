@@ -1,10 +1,10 @@
-Title: Steam Project - Part 1. Data collection
+Title: Gathering Data from the Steam Store API
 Slug: steam-data-collection
-Date: 2019-05-23 19:00
+Date: 2019-05-23
 Category: posts
 Tags: steam, jupyter, python, data
 Status: 
 
-Part of a series, the rest can be viewed [here]({tag}steam).
+*This post forms part of a larger series on downloading, processing and analysing data from the steam store. [See all posts here]({tag}steam).*
 
 {% notebook notebooks/steam/1-data-collection.ipynb cells[1:] %}
