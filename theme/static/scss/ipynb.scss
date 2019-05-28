@@ -1088,21 +1088,12 @@ $font-sans: 'Source Sans Pro', sans-serif;
     color: #000;
     /* any extras will just be numbers: */
   }
-  
-  
-  
   .rendered_html :link {
     text-decoration: underline;
   }
   .rendered_html :visited {
     text-decoration: underline;
   }
-  
-  
-  
-  
-  
-  
   .rendered_html h1:first-child {
     margin-top: 0.538em;
   }
@@ -1225,16 +1216,16 @@ $font-sans: 'Source Sans Pro', sans-serif;
   h6:hover .anchor-link {
     visibility: visible;
   }
-  /* .text_cell.rendered .input_area {
+  .text_cell.rendered .input_area {
     display: none;
-  } */
-  /* .text_cell.rendered 
+  }
+  .text_cell.rendered 
   .text_cell.rendered .rendered_html tr,
-  .text_cell.rendered .rendered_html th,
+  //.text_cell.rendered .rendered_html th, // fix markdown tables
   .text_cell.rendered 
   .text_cell.unrendered .text_cell_render {
     display: none;
-  } */
+  }
   .text_cell .dropzone .input_area {
     border: 2px dashed #bababa;
     margin: -1px;
