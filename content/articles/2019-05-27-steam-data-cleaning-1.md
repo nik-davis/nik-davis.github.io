@@ -6,3 +6,5 @@ Tags: steam, jupyter, python, data
 Status: draft
 
 *This post forms part of a larger series on downloading, processing and analysing data from the steam store. [See all posts here]({tag}steam).*
+
+{ % notebook notebooks\steam\2-data-cleaning-part-1.ipynb cells[2:] %}

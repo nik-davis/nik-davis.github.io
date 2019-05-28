@@ -7,4 +7,4 @@ Status: draft
 
 *This post forms part of a larger series on downloading, processing and analysing data from the steam store. [See all posts here]({tag}steam).*
 
-{% notebook notebooks/steam/1-data-collection.ipynb cells[1:] %}
+{ % notebook notebooks/steam/1-data-collection.ipynb cells[2:] %}
