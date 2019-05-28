@@ -53,9 +53,12 @@ DEFAULT_PAGINATION = 10
 MARKUP = ('md', )
 
 PLUGIN_PATHS = ['plugins', 'plugins/pelican-plugins']
-PLUGINS = ['ipynb.liquid']
+PLUGINS = ['summary', 'ipynb.liquid']
 
 IGNORE_FILES = ['.ipynb_checkpoints']
+
+# Do not include any of generate notebook CSS
+LIQUID_CONFIGS = (("IPYNB_SKIP_CSS", "True", ""),)
 
 # Theme settings
 THEME = 'theme'

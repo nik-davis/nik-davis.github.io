@@ -13,7 +13,6 @@
             {% endif %}
             <div class="social-links">
                 <ul>
-                    <li>Social:</li>
                     {% if GITHUB_USERNAME %}
                         <li class="nav-item"><a class="nav-link social" href="http://github.com/{{ GITHUB_USERNAME }}" rel="me"><i class="fab fa-github"></i></a></li>
                     {% endif %}
@@ -36,6 +35,7 @@
                         <li><a href="{{ AUTHOR_CV }}" rel="me">CV</a></li>
                     {% endif %}
                 </ul>
+            </div>
         </header>
 
         <div class="article_content">

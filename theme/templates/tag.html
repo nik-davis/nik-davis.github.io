@@ -7,16 +7,28 @@
     <article>
         <h1 style="margin-bottom: 30px;">Tag: {{ tag }}</h1>
 
-        <ul class="double-list">
-        {% for article in articles %}
-            <li>
-                <a href='/{{ article.url }}'>
-                    <h2>{{ article.title }}</h2>
-                    <span>{{ article.date.strftime('%d.%m.%Y') }}</span>
-                </a>
-            </li>
-        {% endfor %}
-        </ul>
+        <!-- <table class="archives">
+            {% for article in articles %}
+            <tr>
+                <td class="date">{{ article.date.strftime('%b %Y') }}</td>
+                <td class="title"><a href='/{{ article.url }}'>{{ article.title }}</a></td>
+            </tr>
+            {% endfor %}
+        </table> -->
+        <!-- Use container instead of table -->
+
+        <div class="container-fluid archives">
+            {% for article in articles %}
+            <div class="row">
+                <div class="col-xs-2 date">
+                    <span class="date">{{ article.date.strftime('%b %Y') }}</span>
+                </div>
+                <div class="col-xs-10 title">
+                    <span class="title"><a href='/{{ article.url }}'>{{ article.title }}</a></span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </article>
 </div>
 {% endblock %}
