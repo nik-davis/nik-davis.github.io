@@ -16,16 +16,19 @@
 <div class="container list">
     <article>
         <h1 style="margin-bottom: 30px;">Archives for {{ period | reverse | join(' ') }}</h1>
-        <ul class="double-list">
+
+        <div class="container-fluid archives">
             {% for article in dates %}
-            <li>
-                <a href="{{ SITEURL }}/{{ article.url }}">
-                    <h2>{{ article.title }}</h2>
-                </a>
-                <span>{{ article.date.strftime('%d.%m.%Y') }}</span>
-            </li>
+            <div class="row">
+                <div class="col-xs-2 date">
+                    <span class="date">{{ article.date.strftime('%b %Y') }}</span>
+                </div>
+                <div class="col-xs-10 title">
+                    <span class="title"><a href='/{{ article.url }}'>{{ article.title }}</a></span>
+                </div>
+            </div>
             {% endfor %}
-        </ul>
+        </div>
     </article>
 </div>
 {% endblock %}
