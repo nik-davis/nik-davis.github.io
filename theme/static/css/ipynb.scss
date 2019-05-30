@@ -3,6 +3,7 @@ $header-bg: #222;
 $text-color: #222;
 $link-color: rgb(57, 122, 175) ;//#222;
 $font-sans: 'Source Sans Pro', sans-serif;
+
 // {
 //     max-width: 700px;
 // }
@@ -21,19 +22,22 @@ div.text_cell_render {
 
 div.prompt {
     font-size: 13px !important;
+    // display: none;
 }
 
 div.input_prompt {
     padding: .7em 0.2em !important;
+    // display: none;
 }
 
 div.output_prompt {
     padding: .4em .2em !important;
+    // display: none;
 }
 
 div.input_area {
     margin: .2em 0.4em !important;
-    max-width: 580px !important;
+    // max-width: 580px !important;
 }
 
 // table.dataframe {
@@ -487,9 +491,9 @@ div.unrecognized_cell .inner_cell a:hover {
     display: none;
   }
 }
-div.code_cell {
-  /* avoid page breaking on code cells when printing */
-}
+// div.code_cell {
+//   /* avoid page breaking on code cells when printing */
+// }
 @media print {
   div.code_cell {
     page-break-inside: avoid;
@@ -843,7 +847,7 @@ div.output_subarea {
   box-flex: 1;
   /* Modern browsers */
   flex: 1;
-  max-width: calc(100% - 14ex);
+  max-width: calc(100% - 2ex); // 14ex
 }
 div.output_scroll div.output_subarea {
   overflow-x: visible;
@@ -877,9 +881,9 @@ div.raw_input_container {
   line-height: 1.21429em;
   padding-top: 5px;
 }
-pre.raw_input_prompt {
-  /* nothing needed here. */
-}
+// pre.raw_input_prompt {
+//   /* nothing needed here. */
+// }
 input.raw_input {
   font-family: monospace;
   font-size: inherit;
