@@ -15,6 +15,10 @@ $header-bg: #222;
 $text-color: #222;
 $link-color: rgb(57, 122, 175) ;//#222;
 $font-sans: 'Source Sans Pro', sans-serif;
+$light-green: #5C881C;
+$dark-green: #205F29;
+$dark-purple: #5E1D70;
+$light-purple: #EEE8F0;
 
 /*** Global ***/
 /* html */
@@ -85,7 +89,7 @@ nav {
             a.nav-link { 
                 color: rgba(255, 255, 255, .5);
                 letter-spacing: -.5px;
-                padding: 0 15px 0;
+                padding: 0 10px 0;
 
                 &:hover {
                     color: rgba(255, 255, 255, .9);
@@ -99,6 +103,51 @@ nav {
         }
     }
 }
+
+hr { 
+    margin: 30px 0 40px 0;
+    border-top: 1px solid #CCC;
+ }
+
+/* buttons */
+.btn-green {
+    color: #205F29;
+    font-size: 16px;
+    font-weight: 700;
+    border-width: 2px;
+    border-color: $dark-green;
+
+    // background-image: linear-gradient(to top, #5C881C 100%, transparent 1px);
+    // background-size: 0% 100%;
+    // background-repeat: no-repeat;
+    // background-position: left left;
+    // background-image: linear-gradient(to left, #FFF 50%, #5C881C 50%);
+    // background-size: 200% 100%;
+    // background-position: right bottom;
+    // background-clip: padding-box;
+    transition: all 0.15s ease;
+
+    &:hover {
+        color: #FFF;
+        background-color: $light-green;
+        // background-size: 100% 100%;
+        // background-position: left bottom;
+    }
+}
+
+.btn-purple {
+    color: $dark-purple;
+    border-color: $dark-purple;
+    font-weight: 700;
+
+    transition: all .2s ease;
+
+    &:hover {
+        background-color: $light-purple;
+    }
+}
+
+.btn:focus { box-shadow: none;}
 
 /* Article */
 article {
@@ -315,25 +364,25 @@ article {
                 }
             }
             
-            &.button {
-                font-size: 14px;
-                font-weight: 800;
-                padding: 10px 20px;
-                color: #205F29;
-                border: 1px solid #205F29;
-                background: linear-gradient(to top, #5C881C 100%, transparent 1px);
-                background-size: 0% 100%;
-                background-repeat: no-repeat;
-                background-position: left left;
-                transition: all 600ms ease;
-                // transition-property: color, background-size;
-                // transition-duration: 600ms;
+            // &.button {
+            //     font-size: 14px;
+            //     font-weight: 800;
+            //     padding: 10px 20px;
+            //     color: #205F29;
+            //     border: 1px solid #205F29;
+            //     background: linear-gradient(to top, #5C881C 100%, transparent 1px);
+            //     background-size: 0% 100%;
+            //     background-repeat: no-repeat;
+            //     background-position: left left;
+            //     transition: all 600ms ease;
+            //     // transition-property: color, background-size;
+            //     // transition-duration: 600ms;
                 
-                &:hover{
-                    color: #FFF;
-                    background-size: 100% 100%;
-                }
-            }
+            //     &:hover{
+            //         color: #FFF;
+            //         background-size: 100% 100%;
+            //     }
+            // }
         }
     }
 
@@ -403,7 +452,7 @@ article {
             text-decoration: none;
             
             &:hover {
-                color: #5C881C;
+                color: $dark-purple;
                 background-size: 100% 100%;
                 text-decoration: none;
             }
@@ -428,32 +477,32 @@ article {
                 display: inline-block;
                 margin: 0 5px;
  
-                a {
-                    color: #5C881C;
-                    font-weight: bold;
-                    padding: 8px 20px;
-                    margin-left: 10px;
-                    border: 2px solid #5C881C;
-                    background-image: linear-gradient(to right, #FFF 50%, #5C881C 50%);
-                    background-size: 200% 100%;
-                    background-position: left bottom;
-                    background-clip: padding-box;
-                    transition: all 600ms ease;
+                // a.button {
+                //     color: #5C881C;
+                //     font-weight: bold;
+                //     padding: 8px 20px;
+                //     margin-left: 10px;
+                //     border: 2px solid #5C881C;
+                //     background-image: linear-gradient(to right, #FFF 50%, #5C881C 50%);
+                //     background-size: 200% 100%;
+                //     background-position: left bottom;
+                //     background-clip: padding-box;
+                //     transition: all 600ms ease;
                     
-                    &:hover {
-                        background-position: right bottom;
-                        color: #FFF;
-                    }
+                //     &:hover {
+                //         background-position: right bottom;
+                //         color: #FFF;
+                //     }
 
-                    &.right {
-                        background-image: linear-gradient(to left, #FFF 50%, #5C881C 50%);
-                        background-position: right bottom;
+                //     &.right {
+                //         background-image: linear-gradient(to left, #FFF 50%, #5C881C 50%);
+                //         background-position: right bottom;
 
-                        &:hover {
-                            background-position: left bottom;
-                        }
-                    }
-                }
+                //         &:hover {
+                //             background-position: left bottom;
+                //         }
+                //     }
+                // }
                 
             }
         }
