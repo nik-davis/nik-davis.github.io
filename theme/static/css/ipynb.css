@@ -34,6 +34,10 @@ pre code {
   text-decoration: inherit !important;
 }
 
+.rendered_html p {
+  margin-top: 1em !important;
+}
+
 .rendered_html :link {
   text-decoration: inherit !important;
 }
