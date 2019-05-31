@@ -58,6 +58,44 @@ nav.navbar-dark ul.navbar-nav a.social {
   padding: 0 10px 0;
 }
 
+hr {
+  margin: 30px 0 40px 0;
+  border-top: 1px solid #CCC;
+}
+
+/* buttons */
+.btn-green {
+  color: #205F29;
+  font-size: 16px;
+  font-weight: 700;
+  border-width: 2px;
+  border-color: #205F29;
+  -webkit-transition: all 0.15s ease;
+  transition: all 0.15s ease;
+}
+
+.btn-green:hover {
+  color: #FFF;
+  background-color: #5C881C;
+}
+
+.btn-purple {
+  color: #5E1D70;
+  border-color: #5E1D70;
+  font-weight: 700;
+  -webkit-transition: all .2s ease;
+  transition: all .2s ease;
+}
+
+.btn-purple:hover {
+  background-color: #EEE8F0;
+}
+
+.btn:focus {
+  -webkit-box-shadow: none;
+          box-shadow: none;
+}
+
 /* Article */
 article {
   margin: 0 auto;
@@ -264,25 +302,6 @@ article .meta a.tag:hover {
   background: rgba(0, 0, 0, 0.15);
 }
 
-article .meta a.button {
-  font-size: 14px;
-  font-weight: 800;
-  padding: 10px 20px;
-  color: #205F29;
-  border: 1px solid #205F29;
-  background: linear-gradient(to top, #5C881C 100%, transparent 1px);
-  background-size: 0% 100%;
-  background-repeat: no-repeat;
-  background-position: left left;
-  -webkit-transition: all 600ms ease;
-  transition: all 600ms ease;
-}
-
-article .meta a.button:hover {
-  color: #FFF;
-  background-size: 100% 100%;
-}
-
 article .archives {
   width: 100%;
   margin: 0;
@@ -353,7 +372,7 @@ article .archives .row .date {
 }
 
 .index article header h2 a:hover {
-  color: #5C881C;
+  color: #5E1D70;
   background-size: 100% 100%;
   text-decoration: none;
 }
@@ -376,36 +395,6 @@ article .archives .row .date {
 .index .pagination ul li {
   display: inline-block;
   margin: 0 5px;
-}
-
-.index .pagination ul li a {
-  color: #5C881C;
-  font-weight: bold;
-  padding: 8px 20px;
-  margin-left: 10px;
-  border: 2px solid #5C881C;
-  background-image: -webkit-gradient(linear, left top, right top, color-stop(50%, #FFF), color-stop(50%, #5C881C));
-  background-image: linear-gradient(to right, #FFF 50%, #5C881C 50%);
-  background-size: 200% 100%;
-  background-position: left bottom;
-  background-clip: padding-box;
-  -webkit-transition: all 600ms ease;
-  transition: all 600ms ease;
-}
-
-.index .pagination ul li a:hover {
-  background-position: right bottom;
-  color: #FFF;
-}
-
-.index .pagination ul li a.right {
-  background-image: -webkit-gradient(linear, right top, left top, color-stop(50%, #FFF), color-stop(50%, #5C881C));
-  background-image: linear-gradient(to left, #FFF 50%, #5C881C 50%);
-  background-position: right bottom;
-}
-
-.index .pagination ul li a.right:hover {
-  background-position: left bottom;
 }
 
 /* Post */

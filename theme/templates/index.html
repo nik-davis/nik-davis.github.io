@@ -18,7 +18,7 @@
 
         <div class="meta">
             <div>
-                <a class="button" href="{{ SITEURL }}/{{ article.url }}">Read more &#8594;</a>
+                <a class="btn btn-purple" href="{{ SITEURL }}/{{ article.url }}">Read more</a>
             </div>
 
             <div>
@@ -30,16 +30,17 @@
         </div>
 
     </article>
-    <div class="separator"></div>
+    <!-- <div class="separator"></div> -->
+    <hr>
     {% endfor %}
 
     <nav class="pagination">
         <ul>
             {% if articles_page.has_next() %}
-            <li><a class="left" href="{{ SITEURL }}/{{ articles_next_page.url }}">&#8592; Past</a></li>
+            <li><a class="btn btn-purple" href="{{ SITEURL }}/{{ articles_next_page.url }}"><i class="fas fa-angle-double-left"></i> Past</a></li>
             {% endif %}
             {% if articles_page.has_previous() %}
-            <li><a class="right" href="{{ SITEURL }}/{{ articles_previous_page.url }}">Future &#8594;</a></li>
+            <li><a class="btn btn-purple" href="{{ SITEURL }}/{{ articles_previous_page.url }}">Future <i class="fas fa-angle-double-right"></i></a></li>
             {% endif %}
         </ul>
     </nav>
