@@ -1,6 +1,6 @@
 Title: Optimising Steam Data Cleaning in Python
 Slug: steam-data-cleaning-optimisation
-Date: 2019-06-04
+Date: 2019-06-12
 Category: posts
 Tags: steam, jupyter, python, data, cleaning
 Status: draft
