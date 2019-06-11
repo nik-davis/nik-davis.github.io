@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="Nik Davis">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SteamSpy Data Cleaning in Python | Nik Davis</title>
+
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="alternate" type="application/atom+xml" title="Nik Davis blog atom feed" href="/feeds/all.atom.xml" />
+
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700'>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="/theme/css/style.css"/>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    
+<!-- <link rel="stylesheet" type="text/css" href="/theme/css/ipynb.css"/> -->
+<!-- <link rel="stylesheet" type="text/css" href="/theme/css/ipynb-from-download.css"/> -->
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark">
+        <a class="navbar-brand" href="/" title="Home">Nik Davis</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+            <ul class="navbar-nav ml-md-auto">
+                    <li class="nav-item">
+                        <a class="nav-link social" href="http://github.com/nik-davis" rel="me" target="_blank"><i class="fab fa-github"></i></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link social" href="http://twitter.com/nikdavis0" rel="me" target="_blank"><i class="fab fa-twitter"></i></a>
+                    </li>                    <li class="nav-item">
+                        <a class="nav-link social" href="https://www.linkedin.com/in/nik-davis" rel="me" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link social" href="https://stackoverflow.com/users/10202890/nik-davis" rel="me" target="_blank"><i class="fab fa-stack-overflow"></i></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/pages/about.html" title="About">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives.html" title="Archive">Archive</a>
+                    </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="wrap">
+<div class="container post">
+    <article>
+        <header>
+            <h1>SteamSpy Data Cleaning in Python</h1>
+            <time datetime="article.date.isoformat()" pubdate>Thu 13 June 2019</time>
+        </header>
+
+        <div class="article_content">
+            <p><em>This post forms part of a larger series on downloading, processing and analysing data from the Steam store. <a href="https://nik-davis.github.io/tag/steam.html">See all posts here</a>.</em></p>
+<p><em>View original notebook on <a href="https://github.com/nik-davis/steam-data-science-project">github</a> (<a href="http://nik-davis.github.io/notebooks/steam/4-data-cleaning-steamspy.ipynb">Download</a>). Datasets available on <a href="https://www.kaggle.com/nikdavis/datasets">Kaggle</a>.</em></p>
+<p>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[30]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># standard library imports</span>
+<span class="kn">from</span> <span class="nn">ast</span> <span class="k">import</span> <span class="n">literal_eval</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="c1"># third-party imports</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="c1"># customisations</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;max_columns&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[31]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">raw_steamspy_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../data/raw/steamspy_data.csv&#39;</span><span class="p">)</span>
+<span class="n">raw_steamspy_data</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[31]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>appid</th>
+      <th>name</th>
+      <th>developer</th>
+      <th>publisher</th>
+      <th>score_rank</th>
+      <th>positive</th>
+      <th>negative</th>
+      <th>userscore</th>
+      <th>owners</th>
+      <th>average_forever</th>
+      <th>average_2weeks</th>
+      <th>median_forever</th>
+      <th>median_2weeks</th>
+      <th>price</th>
+      <th>initialprice</th>
+      <th>discount</th>
+      <th>languages</th>
+      <th>genre</th>
+      <th>ccu</th>
+      <th>tags</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>10</td>
+      <td>Counter-Strike</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>NaN</td>
+      <td>124534</td>
+      <td>3339</td>
+      <td>0</td>
+      <td>10,000,000 .. 20,000,000</td>
+      <td>17612</td>
+      <td>709</td>
+      <td>317</td>
+      <td>26</td>
+      <td>999.0</td>
+      <td>999.0</td>
+      <td>0.0</td>
+      <td>English, French, German, Italian, Spanish - Sp...</td>
+      <td>Action</td>
+      <td>14923</td>
+      <td>{'Action': 2681, 'FPS': 2048, 'Multiplayer': 1...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>20</td>
+      <td>Team Fortress Classic</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>NaN</td>
+      <td>3318</td>
+      <td>633</td>
+      <td>0</td>
+      <td>5,000,000 .. 10,000,000</td>
+      <td>277</td>
+      <td>15</td>
+      <td>62</td>
+      <td>15</td>
+      <td>499.0</td>
+      <td>499.0</td>
+      <td>0.0</td>
+      <td>English, French, German, Italian, Spanish - Sp...</td>
+      <td>Action</td>
+      <td>87</td>
+      <td>{'Action': 208, 'FPS': 188, 'Multiplayer': 172...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>30</td>
+      <td>Day of Defeat</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>NaN</td>
+      <td>3416</td>
+      <td>398</td>
+      <td>0</td>
+      <td>5,000,000 .. 10,000,000</td>
+      <td>187</td>
+      <td>0</td>
+      <td>34</td>
+      <td>0</td>
+      <td>499.0</td>
+      <td>499.0</td>
+      <td>0.0</td>
+      <td>English, French, German, Italian, Spanish - Spain</td>
+      <td>Action</td>
+      <td>130</td>
+      <td>{'FPS': 138, 'World War II': 122, 'Multiplayer...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>40</td>
+      <td>Deathmatch Classic</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>NaN</td>
+      <td>1273</td>
+      <td>267</td>
+      <td>0</td>
+      <td>5,000,000 .. 10,000,000</td>
+      <td>258</td>
+      <td>0</td>
+      <td>184</td>
+      <td>0</td>
+      <td>499.0</td>
+      <td>499.0</td>
+      <td>0.0</td>
+      <td>English, French, German, Italian, Spanish - Sp...</td>
+      <td>Action</td>
+      <td>4</td>
+      <td>{'Action': 85, 'FPS': 71, 'Multiplayer': 58, '...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>50</td>
+      <td>Half-Life: Opposing Force</td>
+      <td>Gearbox Software</td>
+      <td>Valve</td>
+      <td>NaN</td>
+      <td>5250</td>
+      <td>288</td>
+      <td>0</td>
+      <td>5,000,000 .. 10,000,000</td>
+      <td>624</td>
+      <td>0</td>
+      <td>415</td>
+      <td>0</td>
+      <td>499.0</td>
+      <td>499.0</td>
+      <td>0.0</td>
+      <td>English, French, German, Korean</td>
+      <td>Action</td>
+      <td>71</td>
+      <td>{'FPS': 235, 'Action': 211, 'Sci-fi': 166, 'Si...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">raw_steamspy_data</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># for col in raw_steamspy_data.columns:</span>
+<span class="c1">#     print(&#39;\n\n&#39;, col, &#39;\n\n&#39;)</span>
+<span class="c1">#     display(raw_steamspy_data[raw_steamspy_data[col].isnull()].head())</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># for col in raw_steamspy_data.columns:</span>
+<span class="c1">#     print(&#39;----------------&#39;, col, &#39;----------------&#39;)</span>
+<span class="c1">#     display(raw_steamspy_data[col].value_counts().head())</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">raw_steamspy_data</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">raw_steamspy_data</span><span class="p">[</span><span class="s1">&#39;owners&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">i</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;, &#39;</span><span class="p">)</span>
+    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    
+<span class="n">ml</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="o">**</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span>
+<span class="n">ml</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">raw_steamspy_data</span><span class="p">[</span><span class="s1">&#39;positive&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">raw_steamspy_data</span><span class="p">[</span><span class="s1">&#39;positive&#39;</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="o">**</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)])</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">raw_steamspy_data</span><span class="p">[</span><span class="s1">&#39;negative&#39;</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="o">**</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)])</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pos</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">raw_steamspy_data</span><span class="p">[</span><span class="s1">&#39;positive&#39;</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="o">**</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)])</span>
+<span class="n">neg</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">raw_steamspy_data</span><span class="p">[</span><span class="s1">&#39;negative&#39;</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="o">**</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)])</span>
+
+<span class="n">div</span> <span class="o">=</span> <span class="n">raw_steamspy_data</span><span class="p">[</span><span class="s1">&#39;positive&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">raw_steamspy_data</span><span class="p">[</span><span class="s1">&#39;negative&#39;</span><span class="p">]</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">div</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">raw_steamspy_data</span><span class="p">[</span><span class="s1">&#39;userscore&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_score</span> <span class="o">=</span> <span class="n">raw_steamspy_data</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;userscore&#39;</span><span class="p">,</span> <span class="s1">&#39;score_rank&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">drop_score</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_score</span><span class="p">[</span><span class="s1">&#39;average_2weeks&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_score</span><span class="p">[</span><span class="s1">&#39;median_2weeks&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_2weeks</span> <span class="o">=</span> <span class="n">drop_score</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;average_2weeks&#39;</span><span class="p">,</span> <span class="s1">&#39;median_2weeks&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">drop_2weeks</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_2weeks</span><span class="p">[</span><span class="s1">&#39;average_forever&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_2weeks</span><span class="p">[</span><span class="s1">&#39;median_forever&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_2weeks</span><span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_2weeks</span><span class="p">[</span><span class="s1">&#39;initialprice&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_2weeks</span><span class="p">[</span><span class="s1">&#39;discount&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_2weeks</span><span class="p">[</span><span class="n">drop_2weeks</span><span class="p">[</span><span class="s1">&#39;initialprice&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_2weeks</span><span class="p">[</span><span class="n">drop_2weeks</span><span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_2weeks</span><span class="p">[</span><span class="n">drop_2weeks</span><span class="p">[</span><span class="s1">&#39;initialprice&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">drop_2weeks</span><span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">]]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_price_nulls</span> <span class="o">=</span> <span class="n">drop_2weeks</span><span class="p">[</span><span class="n">drop_2weeks</span><span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">()]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">drop_price_nulls</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_price_nulls</span><span class="p">[</span><span class="n">drop_price_nulls</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_name_nulls</span> <span class="o">=</span> <span class="n">drop_price_nulls</span><span class="p">[</span><span class="n">drop_price_nulls</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">()]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">drop_name_nulls</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_name_nulls</span><span class="p">[</span><span class="n">drop_name_nulls</span><span class="p">[</span><span class="s1">&#39;genre&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_name_nulls</span><span class="p">[</span><span class="n">drop_name_nulls</span><span class="p">[</span><span class="s1">&#39;languages&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_lang_genre_nulls</span> <span class="o">=</span> <span class="n">drop_name_nulls</span><span class="p">[(</span><span class="n">drop_name_nulls</span><span class="p">[</span><span class="s1">&#39;languages&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">())</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">drop_name_nulls</span><span class="p">[</span><span class="s1">&#39;genre&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">())]</span>
+<span class="n">drop_lang_genre_nulls</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_lang_genre_nulls</span><span class="p">[</span><span class="n">drop_lang_genre_nulls</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\bdemo\b&#39;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_demos</span> <span class="o">=</span> <span class="n">drop_lang_genre_nulls</span><span class="p">[</span><span class="o">~</span><span class="n">drop_lang_genre_nulls</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\bdemo\b&#39;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_demos</span><span class="p">[</span><span class="n">drop_demos</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\bbeta\b&#39;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_betas</span> <span class="o">=</span> <span class="n">drop_demos</span><span class="p">[</span><span class="o">~</span><span class="n">drop_demos</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\bbeta\b&#39;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">drop_betas</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_betas</span><span class="p">[</span><span class="n">drop_betas</span><span class="p">[</span><span class="s1">&#39;developer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_betas</span><span class="p">[</span><span class="n">drop_betas</span><span class="p">[</span><span class="s1">&#39;publisher&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_betas</span><span class="p">[((</span><span class="n">drop_betas</span><span class="p">[</span><span class="s1">&#39;publisher&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span> <span class="o">|</span> <span class="p">(</span><span class="n">drop_betas</span><span class="p">[</span><span class="s1">&#39;developer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()))</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">drop_betas</span><span class="p">[</span><span class="s1">&#39;average_forever&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="p">)]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">drop_betas</span><span class="p">[(</span><span class="n">drop_betas</span><span class="p">[</span><span class="s1">&#39;publisher&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">drop_betas</span><span class="p">[</span><span class="s1">&#39;developer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">())]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">drop_betas</span><span class="p">[(</span><span class="n">drop_betas</span><span class="p">[</span><span class="s1">&#39;publisher&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">drop_betas</span><span class="p">[</span><span class="s1">&#39;developer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">())]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_dev_pub</span> <span class="o">=</span> <span class="n">drop_betas</span><span class="p">[(</span><span class="n">drop_betas</span><span class="p">[</span><span class="s1">&#39;publisher&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">())</span> <span class="o">|</span> <span class="p">(</span><span class="n">drop_betas</span><span class="p">[</span><span class="s1">&#39;developer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">())]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">drop_dev_pub</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_dev_pub</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">drop_dev_pub</span><span class="p">[</span><span class="s1">&#39;developer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">(),</span> <span class="s1">&#39;developer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;unknown&#39;</span>
+<span class="n">drop_dev_pub</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">drop_dev_pub</span><span class="p">[</span><span class="s1">&#39;publisher&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">(),</span> <span class="s1">&#39;publisher&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;unknown&#39;</span>
+<span class="n">drop_dev_pub</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_ccu</span> <span class="o">=</span> <span class="n">drop_dev_pub</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;ccu&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">drop_ccu</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drop_ccu</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># handle tags</span>
+<span class="n">tags</span> <span class="o">=</span> <span class="n">drop_ccu</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span>
+
+<span class="n">tags_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">tags</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="n">eval_row</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eval_row</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">row</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">tags_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        
+<span class="n">tags_dict</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># for i, row in drop_ccu.iterrows():</span>
+<span class="c1">#     row_tags = literal_eval(row[&#39;tags&#39;])</span>
+    
+<span class="c1">#     if isinstance(row_tags, dict):</span>
+<span class="c1">#         for key in tags_dict.keys():</span>
+<span class="c1">#             if key in row_tags:</span>
+<span class="c1">#                 drop_ccu[key] = row_tags[key]</span>
+<span class="c1">#             else:</span>
+<span class="c1">#                 drop_ccu[key] = 0</span>
+<span class="c1">#     else:</span>
+<span class="c1">#         for key in tags_dict.keys():</span>
+<span class="c1">#             drop_ccu[key] = 0</span>
+<span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">option_context</span><span class="p">(</span><span class="s2">&quot;display.max_colwidth&quot;</span><span class="p">,</span> <span class="mi">500</span><span class="p">):</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">drop_ccu</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span>
+    <span class="nb">list</span><span class="p">(</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">drop_ccu</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">keys</span><span class="p">())[:</span><span class="mi">5</span><span class="p">],</span>
+    <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="n">literal_eval</span><span class="p">(</span><span class="n">drop_ccu</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">parse_tags</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">x_eval</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x_eval</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x_eval</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x_eval</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x_eval</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+<span class="n">tag_data</span> <span class="o">=</span> <span class="n">drop_ccu</span><span class="p">[[</span><span class="s1">&#39;appid&#39;</span><span class="p">,</span> <span class="s1">&#39;genre&#39;</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+<span class="n">tag_data</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tag_data</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">parse_tags</span><span class="p">)</span>
+
+<span class="n">tag_names</span> <span class="o">=</span> <span class="n">tag_data</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+<span class="n">cols</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">tag_names</span><span class="p">)))</span>
+
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
+    <span class="n">col_name</span> <span class="o">=</span> <span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+    
+    <span class="n">tag_data</span><span class="p">[</span><span class="n">col_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tag_data</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+    
+<span class="n">tag_data</span> <span class="o">=</span> <span class="n">tag_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;tags&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
+<span class="n">tag_data</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sums</span> <span class="o">=</span> <span class="n">tag_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;genre&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+<span class="n">cols</span> <span class="o">=</span> <span class="n">sums</span><span class="p">[</span><span class="n">sums</span> <span class="o">&gt;</span> <span class="mi">50000</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+
+<span class="n">tag_data</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">tag_data</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">tag_data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">tag_data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">tag_data</span><span class="p">[</span><span class="s1">&#39;genre&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">tag_data_merge</span> <span class="o">=</span> <span class="n">tag_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;genre&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">steamspy_data</span> <span class="o">=</span> <span class="n">drop_ccu</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">tag_data_merge</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;appid&#39;</span><span class="p">)</span>
+
+<span class="n">steamspy_data</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">steamspy_data</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[164]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">process_tags</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">export</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="k">if</span> <span class="n">export</span><span class="p">:</span> 
+        
+        <span class="n">tag_data</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;appid&#39;</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="k">def</span> <span class="nf">parse_tags</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">x_eval</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x_eval</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">x_eval</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x_eval</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">x_eval</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="n">tag_data</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tag_data</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">parse_tags</span><span class="p">)</span>
+
+        <span class="n">tag_names</span> <span class="o">=</span> <span class="n">tag_data</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="n">cols</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">tag_names</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
+            <span class="n">col_name</span> <span class="o">=</span> <span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+
+            <span class="n">tag_data</span><span class="p">[</span><span class="n">col_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tag_data</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">tag_data</span> <span class="o">=</span> <span class="n">tag_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;tags&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">tag_data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;../data/exports/steamspy_tag_data.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exported tag data to &#39;../data/exports/steamspy_tag_data.csv&#39;&quot;</span><span class="p">)</span>
+        
+        
+    <span class="k">def</span> <span class="nf">parse_tags</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">keys</span><span class="p">())[:</span><span class="mi">3</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">parse_tags</span><span class="p">)</span>
+    
+    <span class="c1"># rows with null tags seem to be superseded by newer release, so remove (e.g. dead island)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">()]</span>
+    
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="c1"># handle missing values</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">())</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">)]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;developer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">()]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;languages&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">()]</span>
+    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;genre&#39;</span><span class="p">,</span> <span class="s1">&#39;developer&#39;</span><span class="p">,</span> <span class="s1">&#39;publisher&#39;</span><span class="p">,</span> <span class="s1">&#39;score_rank&#39;</span><span class="p">,</span> <span class="s1">&#39;userscore&#39;</span><span class="p">,</span> <span class="s1">&#39;average_2weeks&#39;</span><span class="p">,</span> <span class="s1">&#39;median_2weeks&#39;</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">,</span> <span class="s1">&#39;initialprice&#39;</span><span class="p">,</span> <span class="s1">&#39;discount&#39;</span><span class="p">,</span> <span class="s1">&#39;ccu&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="c1"># keep top five tags</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">process_tags</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">export</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;owners&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;owners&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; .. &#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># could fill genres like this</span>
+    <span class="c1"># df.loc[df[&#39;genre&#39;].isnull(), &#39;genre&#39;] = df.loc[df[&#39;genre&#39;].isnull(), &#39;tags&#39;].apply(lambda x: x.split(&#39;;&#39;)[0])</span>
+    
+    <span class="c1"># still some duplicates with same name but different appid</span>
+    
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<span class="n">steamspy_data</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">raw_steamspy_data</span><span class="p">)</span>
+<span class="n">steamspy_data</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Exported tag data to &#39;../data/exports/steamspy_tag_data.csv&#39;
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[164]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>appid</th>
+      <th>name</th>
+      <th>positive</th>
+      <th>negative</th>
+      <th>owners</th>
+      <th>average_forever</th>
+      <th>median_forever</th>
+      <th>languages</th>
+      <th>tags</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>10</td>
+      <td>Counter-Strike</td>
+      <td>124534</td>
+      <td>3339</td>
+      <td>10000000-20000000</td>
+      <td>17612</td>
+      <td>317</td>
+      <td>English, French, German, Italian, Spanish - Sp...</td>
+      <td>Action;FPS;Multiplayer</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>20</td>
+      <td>Team Fortress Classic</td>
+      <td>3318</td>
+      <td>633</td>
+      <td>5000000-10000000</td>
+      <td>277</td>
+      <td>62</td>
+      <td>English, French, German, Italian, Spanish - Sp...</td>
+      <td>Action;FPS;Multiplayer</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>30</td>
+      <td>Day of Defeat</td>
+      <td>3416</td>
+      <td>398</td>
+      <td>5000000-10000000</td>
+      <td>187</td>
+      <td>34</td>
+      <td>English, French, German, Italian, Spanish - Spain</td>
+      <td>FPS;World War II;Multiplayer</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>40</td>
+      <td>Deathmatch Classic</td>
+      <td>1273</td>
+      <td>267</td>
+      <td>5000000-10000000</td>
+      <td>258</td>
+      <td>184</td>
+      <td>English, French, German, Italian, Spanish - Sp...</td>
+      <td>Action;FPS;Multiplayer</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>50</td>
+      <td>Half-Life: Opposing Force</td>
+      <td>5250</td>
+      <td>288</td>
+      <td>5000000-10000000</td>
+      <td>624</td>
+      <td>415</td>
+      <td>English, French, German, Korean</td>
+      <td>FPS;Action;Sci-fi</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[166]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># tags = steamspy_data[&#39;tags&#39;].apply(lambda x: literal_eval(x))</span>
+
+<span class="c1"># tag_counts = {}</span>
+
+<span class="c1"># def count_tags(x):</span>
+    
+<span class="c1">#     if isinstance(x, dict):</span>
+<span class="c1">#         for key in x.keys():</span>
+<span class="c1">#             tag_counts[key] = tag_counts.get(key, 0) + x[key]</span>
+    
+<span class="c1">#     return x</span>
+
+<span class="c1"># tags.apply(count_tags)</span>
+<span class="c1"># tag_series = pd.Series(tag_counts)</span>
+
+<span class="c1"># top_tag_list = list(tag_series[tag_series &gt; 100000].index)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[165]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># set(itertools.chain(*steamspy_data[&#39;tags&#39;].str.split(&#39;;&#39;)))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[167]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">steamspy_data</span><span class="p">[</span><span class="s1">&#39;owners&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[167]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0-20000                19543
+20000-50000             3191
+50000-100000            1767
+100000-200000           1458
+200000-500000           1347
+500000-1000000           547
+1000000-2000000          308
+2000000-5000000          209
+5000000-10000000          49
+10000000-20000000         22
+20000000-50000000          3
+50000000-100000000         2
+100000000-200000000        1
+Name: owners, dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[168]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">steamspy_data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;../data/exports/steamspy_clean.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[170]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">steam_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../data/exports/steam_data_clean.csv&#39;</span><span class="p">)</span>
+    
+<span class="n">merged</span> <span class="o">=</span> <span class="n">steam_data</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">steamspy_data</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s1">&#39;steam_appid&#39;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s1">&#39;appid&#39;</span><span class="p">,</span> <span class="n">suffixes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;_steamspy&#39;</span><span class="p">))</span>
+<span class="n">merged</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[170]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>steam_appid</th>
+      <th>required_age</th>
+      <th>platforms</th>
+      <th>categories</th>
+      <th>genres</th>
+      <th>achievements</th>
+      <th>release_date</th>
+      <th>price</th>
+      <th>english</th>
+      <th>developer</th>
+      <th>publisher</th>
+      <th>appid</th>
+      <th>name_steamspy</th>
+      <th>positive</th>
+      <th>negative</th>
+      <th>owners</th>
+      <th>average_forever</th>
+      <th>median_forever</th>
+      <th>languages</th>
+      <th>tags</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Counter-Strike</td>
+      <td>10</td>
+      <td>0</td>
+      <td>windows;mac;linux</td>
+      <td>Multi-player;Online Multi-Player;Local Multi-P...</td>
+      <td>Action</td>
+      <td>0</td>
+      <td>2000-11-01</td>
+      <td>7.19</td>
+      <td>1</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>10</td>
+      <td>Counter-Strike</td>
+      <td>124534</td>
+      <td>3339</td>
+      <td>10000000-20000000</td>
+      <td>17612</td>
+      <td>317</td>
+      <td>English, French, German, Italian, Spanish - Sp...</td>
+      <td>Action;FPS;Multiplayer</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Team Fortress Classic</td>
+      <td>20</td>
+      <td>0</td>
+      <td>windows;mac;linux</td>
+      <td>Multi-player;Online Multi-Player;Local Multi-P...</td>
+      <td>Action</td>
+      <td>0</td>
+      <td>1999-04-01</td>
+      <td>3.99</td>
+      <td>1</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>20</td>
+      <td>Team Fortress Classic</td>
+      <td>3318</td>
+      <td>633</td>
+      <td>5000000-10000000</td>
+      <td>277</td>
+      <td>62</td>
+      <td>English, French, German, Italian, Spanish - Sp...</td>
+      <td>Action;FPS;Multiplayer</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Day of Defeat</td>
+      <td>30</td>
+      <td>0</td>
+      <td>windows;mac;linux</td>
+      <td>Multi-player;Valve Anti-Cheat enabled</td>
+      <td>Action</td>
+      <td>0</td>
+      <td>2003-05-01</td>
+      <td>3.99</td>
+      <td>1</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>30</td>
+      <td>Day of Defeat</td>
+      <td>3416</td>
+      <td>398</td>
+      <td>5000000-10000000</td>
+      <td>187</td>
+      <td>34</td>
+      <td>English, French, German, Italian, Spanish - Spain</td>
+      <td>FPS;World War II;Multiplayer</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Deathmatch Classic</td>
+      <td>40</td>
+      <td>0</td>
+      <td>windows;mac;linux</td>
+      <td>Multi-player;Online Multi-Player;Local Multi-P...</td>
+      <td>Action</td>
+      <td>0</td>
+      <td>2001-06-01</td>
+      <td>3.99</td>
+      <td>1</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>40</td>
+      <td>Deathmatch Classic</td>
+      <td>1273</td>
+      <td>267</td>
+      <td>5000000-10000000</td>
+      <td>258</td>
+      <td>184</td>
+      <td>English, French, German, Italian, Spanish - Sp...</td>
+      <td>Action;FPS;Multiplayer</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Half-Life: Opposing Force</td>
+      <td>50</td>
+      <td>0</td>
+      <td>windows;mac;linux</td>
+      <td>Single-player;Multi-player;Valve Anti-Cheat en...</td>
+      <td>Action</td>
+      <td>0</td>
+      <td>1999-11-01</td>
+      <td>3.99</td>
+      <td>1</td>
+      <td>Gearbox Software</td>
+      <td>Valve</td>
+      <td>50</td>
+      <td>Half-Life: Opposing Force</td>
+      <td>5250</td>
+      <td>288</td>
+      <td>5000000-10000000</td>
+      <td>624</td>
+      <td>415</td>
+      <td>English, French, German, Korean</td>
+      <td>FPS;Action;Sci-fi</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[171]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">steam_clean</span> <span class="o">=</span> <span class="n">merged</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;name_steamspy&#39;</span><span class="p">,</span> <span class="s1">&#39;languages&#39;</span><span class="p">,</span> <span class="s1">&#39;steam_appid&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">steam_clean</span> <span class="o">=</span> <span class="n">steam_clean</span><span class="p">[[</span>
+    <span class="s1">&#39;appid&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;release_date&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;english&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;developer&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;publisher&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;platforms&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;required_age&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;categories&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;genres&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;tags&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;achievements&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;positive&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;negative&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;average_forever&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;median_forever&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;owners&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;price&#39;</span>
+<span class="p">]]</span>
+
+<span class="n">steam_clean</span> <span class="o">=</span> <span class="n">steam_clean</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span>
+    <span class="s1">&#39;tags&#39;</span><span class="p">:</span> <span class="s1">&#39;steamspy_tags&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;positive&#39;</span><span class="p">:</span> <span class="s1">&#39;positive_ratings&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;negative&#39;</span><span class="p">:</span> <span class="s1">&#39;negative_ratings&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;average_forever&#39;</span><span class="p">:</span> <span class="s1">&#39;average_playtime&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;median_forever&#39;</span><span class="p">:</span> <span class="s1">&#39;median_playtime&#39;</span>
+<span class="p">},</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">steam_clean</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[171]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>appid</th>
+      <th>name</th>
+      <th>release_date</th>
+      <th>english</th>
+      <th>developer</th>
+      <th>publisher</th>
+      <th>platforms</th>
+      <th>required_age</th>
+      <th>categories</th>
+      <th>genres</th>
+      <th>steamspy_tags</th>
+      <th>achievements</th>
+      <th>positive_ratings</th>
+      <th>negative_ratings</th>
+      <th>average_playtime</th>
+      <th>median_playtime</th>
+      <th>owners</th>
+      <th>price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>10</td>
+      <td>Counter-Strike</td>
+      <td>2000-11-01</td>
+      <td>1</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>windows;mac;linux</td>
+      <td>0</td>
+      <td>Multi-player;Online Multi-Player;Local Multi-P...</td>
+      <td>Action</td>
+      <td>Action;FPS;Multiplayer</td>
+      <td>0</td>
+      <td>124534</td>
+      <td>3339</td>
+      <td>17612</td>
+      <td>317</td>
+      <td>10000000-20000000</td>
+      <td>7.19</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>20</td>
+      <td>Team Fortress Classic</td>
+      <td>1999-04-01</td>
+      <td>1</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>windows;mac;linux</td>
+      <td>0</td>
+      <td>Multi-player;Online Multi-Player;Local Multi-P...</td>
+      <td>Action</td>
+      <td>Action;FPS;Multiplayer</td>
+      <td>0</td>
+      <td>3318</td>
+      <td>633</td>
+      <td>277</td>
+      <td>62</td>
+      <td>5000000-10000000</td>
+      <td>3.99</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>30</td>
+      <td>Day of Defeat</td>
+      <td>2003-05-01</td>
+      <td>1</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>windows;mac;linux</td>
+      <td>0</td>
+      <td>Multi-player;Valve Anti-Cheat enabled</td>
+      <td>Action</td>
+      <td>FPS;World War II;Multiplayer</td>
+      <td>0</td>
+      <td>3416</td>
+      <td>398</td>
+      <td>187</td>
+      <td>34</td>
+      <td>5000000-10000000</td>
+      <td>3.99</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>40</td>
+      <td>Deathmatch Classic</td>
+      <td>2001-06-01</td>
+      <td>1</td>
+      <td>Valve</td>
+      <td>Valve</td>
+      <td>windows;mac;linux</td>
+      <td>0</td>
+      <td>Multi-player;Online Multi-Player;Local Multi-P...</td>
+      <td>Action</td>
+      <td>Action;FPS;Multiplayer</td>
+      <td>0</td>
+      <td>1273</td>
+      <td>267</td>
+      <td>258</td>
+      <td>184</td>
+      <td>5000000-10000000</td>
+      <td>3.99</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>50</td>
+      <td>Half-Life: Opposing Force</td>
+      <td>1999-11-01</td>
+      <td>1</td>
+      <td>Gearbox Software</td>
+      <td>Valve</td>
+      <td>windows;mac;linux</td>
+      <td>0</td>
+      <td>Single-player;Multi-player;Valve Anti-Cheat en...</td>
+      <td>Action</td>
+      <td>FPS;Action;Sci-fi</td>
+      <td>0</td>
+      <td>5250</td>
+      <td>288</td>
+      <td>624</td>
+      <td>415</td>
+      <td>5000000-10000000</td>
+      <td>3.99</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[172]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">steam_clean</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;../data/steam_clean.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+ 
+
+
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['$','$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        " linebreaks: { automatic: true, width: '95% container' }, " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+</p>
+<p>Thanks for joining me, and I welcome any feedback or suggestions you may have in the comments below.</p>
+        </div>
+
+        <div class="meta">
+            <div>
+                    <a href="https://nik-davis.github.io/tag/steam.html" class="tag">steam</a>
+                    <a href="https://nik-davis.github.io/tag/jupyter.html" class="tag">jupyter</a>
+                    <a href="https://nik-davis.github.io/tag/python.html" class="tag">python</a>
+                    <a href="https://nik-davis.github.io/tag/data.html" class="tag">data</a>
+                    <a href="https://nik-davis.github.io/tag/cleaning.html" class="tag">cleaning</a>
+            </div>
+        </div>
+    </article>
+</div>
+
+    </div>
+
+<!-- <footer>
+    <p>
+    © 2012-2017 Nik Davis, license <a href=""> </a>
+    unless otherwise noted.
+    Generated by <a href= "http://docs.getpelican.com/">Pelican</a>.
+    </p>
+</footer> -->
+
+</body>
+</html>
