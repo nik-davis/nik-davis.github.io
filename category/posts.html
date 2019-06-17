@@ -58,6 +58,1685 @@
 
     <article>
         <header>
+            <h2><a href="https://nik-davis.github.io/posts/2019/steam-data-cleaning-optimisation/">Steam Data Cleaning: Code Optimisation in Python</a></h2>
+            <time datetime="" title="2019-06-12T00:00:00+01:00" pubdate>Wed 12 June 2019</time>
+        </header>
+
+        <div class="article_content">
+            
+
+<p>In my <a href="https://nik-davis.github.io/posts/2019/steam-data-cleaning/">previous post</a>, we took an in-depth look at cleaning data downloaded from the Steam Store. We followed the process from start to finish, omitting just one column, which we will look at today.</p>
+<p>The final column to clean, <code>release_date</code>, provides some interesting optimisation and learning challenges. We encountered columns with a similar structure previously, so we can use what we learned there, but now we will also have dates to handle. We're going to approach this problem with the goal of optimisation in mind - we'll start by figuring out how to solve the task, getting to the point of a functional solution, then we'll test parts of the code to see where the major slowdowns are, using this to develop a framework for improving the efficiency of the code. By iteratively testing, rewriting and rerunning sections of code, we can gradually move towards a more efficienct solution.</p>
+<!-- PELICAN_END SUMMARY -->
+
+<h2 id="Importing-Local-Functions">Importing Local Functions<a class="anchor-link" href="#Importing-Local-Functions">&#182;</a></h2><p>When cleaning the data, we wrote a <code>print_steam_links</code> function to easily create links from a dataframe. To use it again, we could copy the code and define it here, but instead we will use a handy trick in jupyter notebook. If we place the function in a separate python (.py) file inside a folder at the root of the project directory (in this case, the 'src' folder), we can tell python to look there for local modules using <code>sys.path.append</code>. Then we can import the function directly, where the file name (datacleaning) is the module name, as seen below.</p>
+
+
+
+
+
+
+
+
+    
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../src/&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">datacleaning</span> <span class="k">import</span> <span class="n">print_steam_links</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+<h2 id="Import-and-Inspect-Data">Import and Inspect Data<a class="anchor-link" href="#Import-and-Inspect-Data">&#182;</a></h2><p>We begin by importing the necessary libraries and inspecting the data, with every column cleaned except release date.</p>
+
+
+
+
+
+
+
+
+    
+
+<span class="kn">from</span> <span class="nn">ast</span> <span class="k">import</span> <span class="n">literal_eval</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../src/&#39;</span><span class="p">)</span>
+
+<span class="c1"># third-party imports</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="c1"># local imports</span>
+<span class="kn">from</span> <span class="nn">datacleaning</span> <span class="k">import</span> <span class="n">print_steam_links</span>
+
+<span class="c1"># customisations</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;max_columns&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+
+    
+
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Rows:&#39;</span><span class="p">,</span> <span class="n">imported_steam_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Columns:&#39;</span><span class="p">,</span> <span class="n">imported_steam_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">imported_steam_data</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+<pre>Rows: 27391
+Columns: 12
+</pre>
+
+
+
+
+
+    
+
+
+
+
+
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>steam_appid</th>
+      <th>required_age</th>
+      <th>platforms</th>
+      <th>categories</th>
+      <th>genres</th>
+      <th>achievements</th>
+      <th>release_date</th>
+      <th>price</th>
+      <th>english</th>
+      <th>developer</th>
+      <th>publisher</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Counter-Strike</td>
+      <td>10</td>
+      <td>0</td>
+      <td>windows;mac;linux</td>
+      <td>Multi-player;Online Multi-Player;Local Multi-P...</td>
+      <td>Action</td>
+      <td>0</td>
+      <td>{'coming_soon': False, 'date': '1 Nov, 2000'}</td>
+      <td>7.19</td>
+      <td>1</td>
+      <td>Valve</td>
+      <td>Valve</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Team Fortress Classic</td>
+      <td>20</td>
+      <td>0</td>
+      <td>windows;mac;linux</td>
+      <td>Multi-player;Online Multi-Player;Local Multi-P...</td>
+      <td>Action</td>
+      <td>0</td>
+      <td>{'coming_soon': False, 'date': '1 Apr, 1999'}</td>
+      <td>3.99</td>
+      <td>1</td>
+      <td>Valve</td>
+      <td>Valve</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Day of Defeat</td>
+      <td>30</td>
+      <td>0</td>
+      <td>windows;mac;linux</td>
+      <td>Multi-player;Valve Anti-Cheat enabled</td>
+      <td>Action</td>
+      <td>0</td>
+      <td>{'coming_soon': False, 'date': '1 May, 2003'}</td>
+      <td>3.99</td>
+      <td>1</td>
+      <td>Valve</td>
+      <td>Valve</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Deathmatch Classic</td>
+      <td>40</td>
+      <td>0</td>
+      <td>windows;mac;linux</td>
+      <td>Multi-player;Online Multi-Player;Local Multi-P...</td>
+      <td>Action</td>
+      <td>0</td>
+      <td>{'coming_soon': False, 'date': '1 Jun, 2001'}</td>
+      <td>3.99</td>
+      <td>1</td>
+      <td>Valve</td>
+      <td>Valve</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Half-Life: Opposing Force</td>
+      <td>50</td>
+      <td>0</td>
+      <td>windows;mac;linux</td>
+      <td>Single-player;Multi-player;Valve Anti-Cheat en...</td>
+      <td>Action</td>
+      <td>0</td>
+      <td>{'coming_soon': False, 'date': '1 Nov, 1999'}</td>
+      <td>3.99</td>
+      <td>1</td>
+      <td>Gearbox Software</td>
+      <td>Valve</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+<p>Checking the null counts, we see there are no columns with missing values. This means we did our job properly previously, and we should just be able to focus on cleaning and formatting the column.</p>
+
+
+
+
+
+
+
+
+    
+
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+<pre>name            0
+steam_appid     0
+required_age    0
+platforms       0
+categories      0
+genres          0
+achievements    0
+release_date    0
+price           0
+english         0
+developer       0
+publisher       0
+dtype: int64</pre>
+
+
+
+
+
+
+
+
+
+
+
+<h2 id="Checking-the-Format">Checking the Format<a class="anchor-link" href="#Checking-the-Format">&#182;</a></h2><p>First we shall inspect the raw format of the column. As we can see below, it is stored as a dictionary-like string object containing values for <code>coming_soon</code> and <code>date</code>. From the first few rows it would appear that the dates are stored in a uniform format - day as an integer, month as a 3-character string abbreviation, a comma, then the year as a four-digit number. We can parse this either using the python built-in datetime module, or as we already have pandas imported, we can use the <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.to_datetime.html">pd.to_datetime</a> function.</p>
+<p>Also, as our analysis will involve looking at ownership and sales data, looking at games that are not released yet will not be useful to us. Intuitively, we can drop any titles which are marked as coming soon, presumably having this value set to true. As a side note, once parsed it may be worth checking that no release dates in our data are beyond the current date, just to make doubly sure none slip through.</p>
+
+
+
+
+
+
+
+
+    
+
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+<pre>&#34;{&#39;coming_soon&#39;: False, &#39;date&#39;: &#39;1 Nov, 2000&#39;}&#34;</pre>
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>release_date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Counter-Strike</td>
+      <td>{'coming_soon': False, 'date': '1 Nov, 2000'}</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Team Fortress Classic</td>
+      <td>{'coming_soon': False, 'date': '1 Apr, 1999'}</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Day of Defeat</td>
+      <td>{'coming_soon': False, 'date': '1 May, 2003'}</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Deathmatch Classic</td>
+      <td>{'coming_soon': False, 'date': '1 Jun, 2001'}</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Half-Life: Opposing Force</td>
+      <td>{'coming_soon': False, 'date': '1 Nov, 1999'}</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+<p>We can explore the data a little further using the <code>value_counts</code> method. Whilst it looks like most dates are in the format <code>dd mmm, yyyy</code>, there at least a couple of rows in the format <code>mmm yyyy</code>, such as 'Jun 2009'. This means that all the dates aren't stored uniformly, so we will have to take care when parsing them.</p>
+
+
+
+
+
+
+
+
+    
+
+
+<span class="n">imported_steam_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">imported_steam_data</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;Jun 2009&#39;</span><span class="p">),</span> <span class="s1">&#39;release_date&#39;</span><span class="p">]</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+<pre>{&#39;coming_soon&#39;: False, &#39;date&#39;: &#39;13 Jul, 2018&#39;}    64
+{&#39;coming_soon&#39;: False, &#39;date&#39;: &#39;31 Jan, 2019&#39;}    58
+{&#39;coming_soon&#39;: False, &#39;date&#39;: &#39;5 Apr, 2016&#39;}     56
+{&#39;coming_soon&#39;: False, &#39;date&#39;: &#39;16 Nov, 2018&#39;}    56
+{&#39;coming_soon&#39;: False, &#39;date&#39;: &#39;31 May, 2018&#39;}    55
+Name: release_date, dtype: int64
+</pre>
+
+
+
+
+
+    
+
+
+
+
+
+<pre>561    {&#39;coming_soon&#39;: False, &#39;date&#39;: &#39;Jun 2009&#39;}
+618    {&#39;coming_soon&#39;: False, &#39;date&#39;: &#39;Jun 2009&#39;}
+Name: release_date, dtype: object</pre>
+
+
+
+
+
+
+
+
+
+
+
+<p>There are also a number of rows that have a blank string for the date value. We'll have to treat these as missing values, and decide if we want to remove them from the dataset. We can use the imported <code>print_steam_links</code> function to inspect some of the rows, using <code>sample</code> to randomly select a few.</p>
+
+
+
+
+
+
+
+
+    
+
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Rows with no release date:&#39;</span><span class="p">,</span> <span class="n">no_release_date</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">print_steam_links</span><span class="p">(</span><span class="n">no_release_date</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+<pre>Rows with no release date: 26 
+
+1... 2... 3... KICK IT! (Drop That Beat Like an Ugly Baby): https://store.steampowered.com/app/15540
+Sub Rosa: https://store.steampowered.com/app/272230
+AirBuccaneers: https://store.steampowered.com/app/223630
+Sword of the Stars: The Pit: https://store.steampowered.com/app/233700
+Stronghold 2: Steam Edition: https://store.steampowered.com/app/40960
+</pre>
+
+
+
+
+
+
+
+
+
+
+<p>It looks like some are special re-releases, like anniversary or game of the year editions, some are early access and not officially released yet, and others simply have a missing date. Apart from that there don't appear to be any clear patterns emerging, so as there are only 26 rows it may be best to remove them.</p>
+<h2 id="Parsing-the-dates">Parsing the dates<a class="anchor-link" href="#Parsing-the-dates">&#182;</a></h2><p>Taking a look at the format of the column, we'll need to be using <code>literal_eval</code> as we did before. Apart from that it should be straightforward enough to extract the date.</p>
+
+
+
+
+
+
+
+
+    
+
+
+<span class="n">imported_steam_data</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+<pre>&lt;class &#39;str&#39;&gt;
+</pre>
+
+
+
+
+
+    
+
+
+
+
+
+<pre>&#34;{&#39;coming_soon&#39;: False, &#39;date&#39;: &#39;1 Nov, 2000&#39;}&#34;</pre>
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+<span class="n">literal_eval</span><span class="p">(</span><span class="n">imported_steam_data</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+<pre>&lt;class &#39;dict&#39;&gt;
+</pre>
+
+
+
+
+
+    
+
+
+
+
+
+<pre>&#39;1 Nov, 2000&#39;</pre>
+
+
+
+
+
+
+
+
+
+
+
+<p>Once extracted, we can use the <code>pd.to_datetime</code> functon to interpret and store dates as <code>datetime</code> objects. This is useful as it will allow us to search and sort the dataset by year when it comes to performing analysis. Say for example we only wish to examine games released in 2010, by converting our dates to a python-recognisable format this will be very easy to achieve.</p>
+<p>As seen below, we can supply the <code>to_datetime</code> function with a date and pandas will automatically interpret the format. We can then inspect it or print an attribute like the year. We can also provide pandas with the format explicitly, so it knows what to look for and how to parse it, which may be <a href="https://stackoverflow.com/questions/32034689/why-is-pandas-to-datetime-slow-for-non-standard-time-format-such-as-2014-12-31">quicker for large sets of data</a>.</p>
+
+
+
+
+
+
+
+
+    
+
+
+<span class="nb">print</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">timestamp</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+
+<span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">imported_steam_data</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> %b, %Y&#39;</span><span class="p">)</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+<pre>2000-11-01 00:00:00
+2000
+</pre>
+
+
+
+
+
+    
+
+
+
+
+
+<pre>Timestamp(&#39;2000-11-01 00:00:00&#39;)</pre>
+
+
+
+
+
+
+
+
+
+
+
+<h2 id="Initial-Function-Definition">Initial Function Definition<a class="anchor-link" href="#Initial-Function-Definition">&#182;</a></h2><p>Now we are ready to begin defining a function. As we only want to keep unreleased games, we first evaluate values from the <code>coming_soon</code> key, and keep only those where the value is <code>False</code>. Next we extract the release date, and set missing dates to np.nan, the default way of storing null values in pandas.</p>
+<p>Then, using the formats we learned previously, we interpret those dates using the <code>to_datetime</code> function. Once complete we pass over the dataframe once more with a general call to <code>to_datetime</code>, catching any dates we missed.</p>
+<p>Finally we drop the columns we no longer need and return the dataframe.</p>
+
+
+
+
+
+
+
+
+    
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">])</span>
+    <span class="c1"># Only want to keep released games</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="c1"># extract release date and set missing dates to null</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    
+    <span class="c1"># Parse the date formats we have discovered</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> %b, %Y&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;%b %Y&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Parse the rest of the date formats</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">])</span>
+    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;datetime&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">process_release_date</span><span class="p">(</span><span class="n">imported_steam_data</span><span class="p">)</span>
+<span class="n">result</span><span class="p">[[</span><span class="s1">&#39;steam_appid&#39;</span><span class="p">,</span> <span class="s1">&#39;release_date&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>steam_appid</th>
+      <th>release_date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>10</td>
+      <td>2000-11-01</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>20</td>
+      <td>1999-04-01</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>30</td>
+      <td>2003-05-01</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>40</td>
+      <td>2001-06-01</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>50</td>
+      <td>1999-11-01</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+<p>Whilst functional, the process is quite slow. The easiest way to measure the efficiency of code is by timing how long it takes to run, and that is the method we'll use here. By running this code inside of jupyter notebook, we can take advanted of IPython magics, and use the <a href="https://ipython.readthedocs.io/en/stable/interactive/magics.html#magic-timeit">%timeit</a> magic to easily test how long it takes to run the function.</p>
+
+
+
+
+
+
+
+
+    
+ process_release_date(imported_steam_data)
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+<pre>3.88 s ± 310 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+</pre>
+
+
+
+
+
+
+
+
+
+
+<p>We can see that, on average, it takes about 3.5 seconds. Whilst manageable, we could certainly benefit from optimising our code, as this could quickly add up in larger data sets, where increasing efficiency can prove invaluable.</p>
+<p>There are a few areas we can investigate to make improvements. When initially parsing the date, we end up calling <code>literal_eval</code> twice, which may be a source of slowdown. We also loop over the entire dataset multiple times when calling the <code>to_datetime</code> function.</p>
+<p>We can be pretty confident that reducing the number of traversals over the dataset will provide some gains, but first, let's find out which part is causing the greatest slowdown. Targetting the slowest part of the code and improving it will lead to the most noticeable gains, and beyond that we can tweak other parts until we're happy.</p>
+<p>We just used the %timeit magic to time our function - the function is run multiple times and the average execution time is given - but we can also use the built-in <code>time</code> module of python to easily inspect specific sections of code.</p>
+
+
+
+
+
+
+
+
+    
+
+<span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="c1"># do something</span>
+<span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="c1"># stop timing</span>
+<span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="c1"># calculate time difference</span>
+<span class="n">execution_time</span> <span class="o">=</span> <span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">execution_time</span><span class="p">)</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+<pre>0.08697056770324707
+</pre>
+
+
+
+
+
+
+
+
+
+
+<p>We'll break down the function into different sections which we think may be causing slowdown, and see which takes the longest to execute.</p>
+
+
+
+
+
+
+
+
+    
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="c1"># first section</span>
+    <span class="n">eval_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Evaluation run-time:&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">eval_start</span><span class="p">)</span>
+    
+    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="c1"># second section</span>
+    <span class="n">first_parse_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> %b, %Y&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;%b %Y&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;First parse run-time:&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">first_parse_start</span><span class="p">)</span>
+    
+    <span class="c1"># third section</span>
+    <span class="n">second_parse_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">])</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Second parse run-time:&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">second_parse_start</span><span class="p">)</span>
+    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;datetime&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span>
+
+<span class="n">function_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">process_release_date</span><span class="p">(</span><span class="n">imported_steam_data</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Total run-time:&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">function_start</span><span class="p">)</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+<pre>Evaluation run-time: 0.7157635688781738
+First parse run-time: 0.0059967041015625
+Second parse run-time: 2.839102029800415
+
+Total run-time: 3.5898571014404297
+</pre>
+
+
+
+
+
+
+
+
+
+
+<p>Immediately we can see that the majority of run-time is taken up by the second call to <code>pd.to_datetime</code>. This suggests that the first two calls are not functioning as expected - they are possibly terminating after the first error instead of skipping over it as desired - and most of the work is being done by the final call. Now it makes sense why it is slow - pandas has to figure out how each date is formatted, and since we know we have some variations this may be slowing it down considerably.</p>
+<p>Whilst the evaluation run-time is much shorter, multiple calls to <code>literal_eval</code> may be slowing the function as well, so we may wish to investigate that. As we know the biggest slowdown, we will begin there.</p>
+<p>We now know that handling our dates in their current form is slow, and we know that we have some different formats mixed in there. Whilst there are likely many possible solutions to this problem, using regular expressions (or regex) comes to mind as they tend to excel at pattern matching in strings.</p>
+<p>We know for sure two of the patterns, so let's build a regex for each of those. Then we can iteratively add more as we discover any other patterns. A powerful and useful tool for building and testing regex can be found at <a href="https://regexr.com/">regexr.com</a>.</p>
+
+
+
+
+
+
+
+
+    
+
+<span class="n">string</span> <span class="o">=</span> <span class="s1">&#39;13 Jul, 2018&#39;</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">string</span><span class="p">))</span>
+
+<span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;[A-Za-z]</span><span class="si">{3}</span><span class="s1"> [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span>
+<span class="n">string</span> <span class="o">=</span> <span class="s1">&#39;Apr 2016&#39;</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">string</span><span class="p">))</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+<pre>&lt;re.Match object; span=(0, 12), match=&#39;13 Jul, 2018&#39;&gt;
+&lt;re.Match object; span=(0, 8), match=&#39;Apr 2016&#39;&gt;
+</pre>
+
+
+
+
+
+
+
+
+
+
+<p>Using these two patterns we can start building out a function. We're going to apply a function to the date column which searches for each pattern, returning a standardised date string which we will then feed into the <code>to_datetime</code> function.</p>
+<p>The first search matches the 'mmm yyyy' pattern, like 'Apr 2019'. As we don't know the particular day for these matches we will assume it is the first of the month, returning '1 Apr 2019' in this example.</p>
+<p>If we don't match this, we'll check for the second case. The second match will be the 'dd mmm, yyyy' pattern, like '13 Jul, 2018'. In this case we will simply return the match with the comma removed, to become '13 Jul 2018'.</p>
+<p>If neither of these match, we'll check for the empty string, and return it as it is for now.</p>
+<p>For anything else we'll simply print the string so we know what else we should be searching for.</p>
+
+
+
+
+
+
+
+
+    
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+    
+    <span class="k">def</span> <span class="nf">parse_date</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[A-Za-z]</span><span class="si">{3}</span><span class="s1"> [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;1 &#39;</span> <span class="o">+</span> <span class="n">x</span> 
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[\d]{1,2} [A-Za-z]</span><span class="si">{3}</span><span class="s1">, [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">parse_date</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="n">infer_datetime_format</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">df</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">process_release_date</span><span class="p">(</span><span class="n">imported_steam_data</span><span class="p">)</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+<p>As no other rows we're printed out, we can be confident that we caught all of the patterns, and don't have any extra to take care of.</p>
+<p>We just used the <code>infer_datetime_format</code> parameter of <code>to_datetime</code>, which, according to the documentation, can speed up the process. However, as we now know the exact format the dates will be in, we can explicitly set it ourselves, and this should be the fastest way of doing things.</p>
+<p>We also need to decide how to handle the missing dates - those with the empty strings. For now let's set the way the function handles errors as <code>coerce</code>, which returns <code>NaT</code> (not a time).</p>
+<p>We can now rewrite the function and time it as we did before.</p>
+
+
+
+
+
+
+
+
+    
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+    
+    <span class="c1"># Simple parsing</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<span class="k">def</span> <span class="nf">process_release_date_new</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+    
+    <span class="c1"># Complex parsing</span>
+    <span class="k">def</span> <span class="nf">parse_date</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[A-Za-z]</span><span class="si">{3}</span><span class="s1"> [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;1 &#39;</span> <span class="o">+</span> <span class="n">x</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[\d]{1,2} [A-Za-z]</span><span class="si">{3}</span><span class="s1">, [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x</span>
+            
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">parse_date</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> %b %Y&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
+    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">df</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Testing date parsing:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="o">%</span><span class="k">timeit</span> process_release_date_old(imported_steam_data)
+<span class="o">%</span><span class="k">timeit</span> process_release_date_new(imported_steam_data)
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+<pre>Testing date parsing:
+
+3.61 s ± 54.2 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+993 ms ± 104 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+</pre>
+
+
+
+
+
+
+
+
+
+
+<p>Our results show that the new method is almost four times faster, so we're on the right track.</p>
+<p>Another optimisation we can make here is checking which part of the if/else statements has the most matches. It makes sense to order our statements from most matches to least, so for the majority of rows we only have to search through once.</p>
+<p>To do this, instead of returning the date we'll return a number for each match. We can then print the value counts for the column and see which is the most frequent.</p>
+
+
+
+
+
+
+
+
+    
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+    
+    <span class="k">def</span> <span class="nf">parse_date</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[A-Za-z]</span><span class="si">{3}</span><span class="s1"> [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;0: mmm yyyy&#39;</span> <span class="c1"># &#39;1 &#39; + x</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[\d]{1,2} [A-Za-z]</span><span class="si">{3}</span><span class="s1">, [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;1: dd mmm, yyyy&#39;</span> <span class="c1"># x.replace(&#39;,&#39;, &#39;&#39;)</span>
+        <span class="k">elif</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;2: empty&#39;</span> <span class="c1"># pass</span>
+            
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">parse_date</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">optimise_regex_order</span><span class="p">(</span><span class="n">imported_steam_data</span><span class="p">)</span>
+
+<span class="n">result</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+<pre>1: dd mmm, yyyy    27275
+0: mmm yyyy           57
+2: empty              22
+Name: release_date, dtype: int64</pre>
+
+
+
+
+
+
+
+
+
+
+
+<p>By far the majority of dates are in the 'dd mmm, yyyy' format, which is second in our if/else statements. This means that for all these rows we are unnecessarily searching the string twice. Simply by reordering our searches we should see a performance improvement.</p>
+
+
+
+
+
+
+
+
+    
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+    
+    <span class="k">def</span> <span class="nf">parse_date</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[A-Za-z]</span><span class="si">{3}</span><span class="s1"> [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;1 &#39;</span> <span class="o">+</span> <span class="n">x</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[\d]{1,2} [A-Za-z]</span><span class="si">{3}</span><span class="s1">, [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x</span>
+            
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">parse_date</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> %b %Y&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<span class="k">def</span> <span class="nf">process_release_date_ordered</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+    
+    <span class="k">def</span> <span class="nf">parse_date</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[\d]{1,2} [A-Za-z]</span><span class="si">{3}</span><span class="s1">, [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[A-Za-z]</span><span class="si">{3}</span><span class="s1"> [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;1 &#39;</span> <span class="o">+</span> <span class="n">x</span>
+        <span class="k">elif</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x</span>
+            
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">parse_date</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> %b %Y&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<span class="o">%</span><span class="k">timeit</span> process_release_date_unordered(imported_steam_data)
+<span class="o">%</span><span class="k">timeit</span> process_release_date_ordered(imported_steam_data)
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+<pre>820 ms ± 7.1 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+792 ms ± 2.82 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+</pre>
+
+
+
+
+
+
+
+
+
+
+<p>It's an improvement, if only slightly, so we'll keep it. If anything this goes to show how fast regex pattern matching is, as there was hardly any slowdown in searching most of the strings twice.</p>
+<p>Now parsing is well-optimised we can move on to the evaluation section.</p>
+
+
+
+
+
+
+
+
+    
+
+<span class="k">def</span> <span class="nf">evaluation_method_original</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">])</span>    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+    
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<span class="k">def</span> <span class="nf">evaluation_method_1</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+    
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<span class="k">def</span> <span class="nf">evaluation_method_2</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">df_2</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">([</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="n">df_2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<span class="k">def</span> <span class="nf">evaluation_method_3</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">eval_date</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">eval_date</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">()]</span>
+    
+    <span class="k">return</span> <span class="n">df</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Original method:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="o">%</span><span class="k">timeit</span> evaluation_method_original(imported_steam_data)
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">New methods:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="o">%</span><span class="k">timeit</span> evaluation_method_1(imported_steam_data)
+<span class="o">%</span><span class="k">timeit</span> evaluation_method_2(imported_steam_data)
+<span class="o">%</span><span class="k">timeit</span> evaluation_method_3(imported_steam_data)
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+<pre>Original method:
+
+709 ms ± 9.14 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+New methods:
+
+370 ms ± 1.07 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+366 ms ± 942 µs per loop (mean ± std. dev. of 7 runs, 1 loop each)
+353 ms ± 931 µs per loop (mean ± std. dev. of 7 runs, 1 loop each)
+</pre>
+
+
+
+
+
+
+
+
+
+
+<p>It looks like we may have been right in our assumption that multiple calls to <code>literal_eval</code> were slowing down the function - by calling it once instead of twice we almost halved the run-time.</p>
+<p>Of the new methods the final one was just about the fastest, which is useful because it contains flexible custom logic we can modify if needed. Let's put everything together into the final function, and time it once more to see the improvements we've made.</p>
+<p>We'll make a couple of changes so we can easily remove missing values at the end, which should mean we end up with clean release dates.</p>
+
+
+
+
+
+
+
+
+    
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">eval_date</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="s1">&#39;&#39;</span> <span class="c1"># return blank string so can drop missing at end</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">eval_date</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">parse_date</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[\d]{1,2} [A-Za-z]</span><span class="si">{3}</span><span class="s1">, [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[A-Za-z]</span><span class="si">{3}</span><span class="s1"> [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;1 &#39;</span> <span class="o">+</span> <span class="n">x</span>
+        <span class="k">elif</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">parse_date</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> %b %Y&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
+    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">()]</span>
+    
+    <span class="k">return</span> <span class="n">df</span>
+
+<span class="o">%</span><span class="k">timeit</span> process_release_date(imported_steam_data)
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+<pre>481 ms ± 1.46 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+</pre>
+
+
+
+
+
+
+
+
+
+
+<p>Referring back to the original time of 3.5s, we've achieved a 7x speed increase. That's pretty close to an order of magnitude improvement. With a dataset like this, we're only talking a matter of seconds, but in a much larger dataset with millions of rows, spending the time to improve code efficiency could shave hours off of run time.</p>
+<p>As I'm sure you're aware if you have some familiarity with writing code, for most tasks there are a million and one ways of approaching and solving the problem. Hopefully this helps lay out a simple methodology for testing, improving and thinking about code. Plus, it can be fun and interesting to figure out different ways of achieving the same output. Speaking of which, let's look at a final little challenge.</p>
+
+
+
+
+
+
+
+<h2 id="Bonus:-Vanilla-Python-Solution">Bonus: Vanilla Python Solution<a class="anchor-link" href="#Bonus:-Vanilla-Python-Solution">&#182;</a></h2><p>In our final solution to cleaning the <code>release_date</code> column, we relied heavily on the pandas library. Often using libraries such as this is a good idea as it contains vectorised and optimised methods for dealing with data, plus it's generally quicker to develop a working solution.</p>
+<p>As a small challenge, let's have a look at performing the above cleaning process entirely with vanilla python functions, as in those available by default using python and its built-in packages.</p>
+<p>First we need to convert the data from a pandas dataframe into a native python format. We have a few options but let's store the data as a list of lists. We'll also only include the AppID and release date columns, for the sake of demonstration.</p>
+
+
+
+
+
+
+
+
+    
+
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">imported_steam_data</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+    <span class="n">date_list</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;steam_appid&#39;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;release_date&#39;</span><span class="p">]])</span>
+    
+<span class="n">date_list</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+<pre>[[10, &#34;{&#39;coming_soon&#39;: False, &#39;date&#39;: &#39;1 Nov, 2000&#39;}&#34;],
+ [20, &#34;{&#39;coming_soon&#39;: False, &#39;date&#39;: &#39;1 Apr, 1999&#39;}&#34;],
+ [30, &#34;{&#39;coming_soon&#39;: False, &#39;date&#39;: &#39;1 May, 2003&#39;}&#34;],
+ [40, &#34;{&#39;coming_soon&#39;: False, &#39;date&#39;: &#39;1 Jun, 2001&#39;}&#34;],
+ [50, &#34;{&#39;coming_soon&#39;: False, &#39;date&#39;: &#39;1 Nov, 1999&#39;}&#34;]]</pre>
+
+
+
+
+
+
+
+
+
+
+
+<p>The process is actually very similar. We have to loop through the data, rather than using pandas <code>apply</code>, and we parse the dates using <code>strptime</code> from the <code>datetime</code> module. We can generate the output using regex pattern matching, as we did before, and we can store the results in a new list of lists.</p>
+<p>We also display the first few rows of the output, and time how long it takes to run so we can compare.</p>
+
+
+
+
+
+
+
+
+    
+
+
+<span class="k">def</span> <span class="nf">python_only</span><span class="p">(</span><span class="n">ls</span><span class="p">):</span>
+    
+    <span class="n">processed_rows</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">date</span> <span class="ow">in</span> <span class="n">ls</span><span class="p">:</span>
+        <span class="n">eval_row</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">eval_row</span><span class="p">[</span><span class="s1">&#39;coming_soon&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[\d]{1,2} [A-Za-z]</span><span class="si">{3}</span><span class="s1">, [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">eval_row</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]):</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">eval_row</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> %b, %Y&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[A-Za-z]</span><span class="si">{3}</span><span class="s1"> [\d]</span><span class="si">{4}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">eval_row</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]):</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">eval_row</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="s1">&#39;%b %Y&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">eval_row</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Not matched:&#39;</span><span class="p">,</span> <span class="n">eval_row</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+            <span class="n">processed_rows</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">i</span><span class="p">,</span> <span class="n">output</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">processed_rows</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">])</span>
+    
+    <span class="k">return</span> <span class="n">processed_rows</span>
+
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">python_only</span><span class="p">(</span><span class="n">date_list</span><span class="p">)[:</span><span class="mi">5</span><span class="p">])</span>
+
+<span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Time taken: </span><span class="si">{end:.2f}</span><span class="s1">s&#39;</span><span class="p">)</span>
+</pre>
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+<pre>[[10, datetime.datetime(2000, 11, 1, 0, 0)],
+ [20, datetime.datetime(1999, 4, 1, 0, 0)],
+ [30, datetime.datetime(2003, 5, 1, 0, 0)],
+ [40, datetime.datetime(2001, 6, 1, 0, 0)],
+ [50, datetime.datetime(1999, 11, 1, 0, 0)]]</pre>
+
+
+
+
+
+
+    
+
+
+
+<pre>
+Time taken: 0.88s
+</pre>
+
+
+
+
+
+
+
+
+
+
+<p>Impressively, this method only took twice as long as our optimised method using pandas. It would probably take a bit longer if we had to deal with all the columns in the dataset, but this is still a viable solution. Also, we didn't properly handle the missing values, and the data is populated with some amount of 'none' values.</p>
+
+
+
+
+ 
+
+
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['$','$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        " linebreaks: { automatic: true, width: '95% container' }, " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+</p>
+<p>Thanks for joining me, and as always I welcome any feedback or suggestions you may have in the comments below.</p>
+        </div>
+
+        <div class="meta">
+            <div>
+                <a class="btn btn-purple" href="https://nik-davis.github.io/posts/2019/steam-data-cleaning-optimisation/">Read more</a>
+            </div>
+
+            <div>
+                <a class="tag" href="https://nik-davis.github.io/tag/steam.html">steam</a>
+                <a class="tag" href="https://nik-davis.github.io/tag/jupyter.html">jupyter</a>
+                <a class="tag" href="https://nik-davis.github.io/tag/python.html">python</a>
+                <a class="tag" href="https://nik-davis.github.io/tag/data.html">data</a>
+                <a class="tag" href="https://nik-davis.github.io/tag/cleaning.html">cleaning</a>
+            </div>
+
+        </div>
+
+    </article>
+    <!-- <div class="separator"></div> -->
+    <hr>
+    <article>
+        <header>
             <h2><a href="https://nik-davis.github.io/posts/2019/steam-data-cleaning/">Steam Data Cleaning in Python</a></h2>
             <time datetime="" title="2019-06-11T00:00:00+01:00" pubdate>Tue 11 June 2019</time>
         </header>
