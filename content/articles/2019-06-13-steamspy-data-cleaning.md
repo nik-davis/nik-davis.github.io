@@ -11,4 +11,4 @@ Status: draft
 
 {% notebook notebooks\steam\4-data-cleaning-steamspy.ipynb cells[2:] %}
 
-Thanks for joining me, and I welcome any feedback or suggestions you may have in the comments below.
+Thanks for joining me, and as always I welcome any feedback or suggestions you may have in the comments below.

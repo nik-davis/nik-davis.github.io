@@ -3,7 +3,7 @@ Slug: steam-data-cleaning
 Date: 2019-06-11
 Category: posts
 Tags: steam, jupyter, python, data, cleaning
-Status: 
+Status: published
 
 *This post forms part of a larger series on downloading, processing and analysing data from the Steam store. [See all posts here]({tag}steam).*
 

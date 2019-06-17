@@ -1,9 +1,9 @@
-Title: Optimising Steam Data Cleaning in Python
+Title: Steam Data Cleaning: Code Optimisation in Python
 Slug: steam-data-cleaning-optimisation
 Date: 2019-06-12
 Category: posts
 Tags: steam, jupyter, python, data, cleaning
-Status: draft
+Status: published
 
 *This post forms part of a larger series on downloading, processing and analysing data from the Steam store. [See all posts here]({tag}steam).*
 
@@ -11,4 +11,4 @@ Status: draft
 
 {% notebook notebooks\steam\3-data-cleaning-optimisation.ipynb cells[2:] %}
 
-Thanks for joining me, and I welcome any feedback or suggestions you may have in the comments below.
+Thanks for joining me, and as always I welcome any feedback or suggestions you may have in the comments below.
