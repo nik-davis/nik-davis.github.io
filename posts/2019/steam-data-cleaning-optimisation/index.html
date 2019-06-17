@@ -74,7 +74,7 @@
 
 <p>In my <a href="https://nik-davis.github.io/posts/2019/steam-data-cleaning/">previous post</a>, we took an in-depth look at cleaning data downloaded from the Steam Store. We followed the process from start to finish, omitting just one column, which we will look at today.</p>
 <p>The final column to clean, <code>release_date</code>, provides some interesting optimisation and learning challenges. We encountered columns with a similar structure previously, so we can use what we learned there, but now we will also have dates to handle. We're going to approach this problem with the goal of optimisation in mind - we'll start by figuring out how to solve the task, getting to the point of a functional solution, then we'll test parts of the code to see where the major slowdowns are, using this to develop a framework for improving the efficiency of the code. By iteratively testing, rewriting and rerunning sections of code, we can gradually move towards a more efficienct solution.</p>
-<!-- PELICAN_END SUMMARY -->
+
 
 <h2 id="Importing-Local-Functions">Importing Local Functions<a class="anchor-link" href="#Importing-Local-Functions">&#182;</a></h2><p>When cleaning the data, we wrote a <code>print_steam_links</code> function to easily create links from a dataframe. To use it again, we could copy the code and define it here, but instead we will use a handy trick in jupyter notebook. If we place the function in a separate python (.py) file inside a folder at the root of the project directory (in this case, the 'src' folder), we can tell python to look there for local modules using <code>sys.path.append</code>. Then we can import the function directly, where the file name (datacleaning) is the module name, as seen below.</p>
 
