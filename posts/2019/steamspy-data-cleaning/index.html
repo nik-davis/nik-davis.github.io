@@ -60,7 +60,7 @@
     <article>
         <header>
             <h1>SteamSpy Data Cleaning in Python</h1>
-            <time datetime="article.date.isoformat()" pubdate>Thu 13 June 2019</time>
+            <time datetime="article.date.isoformat()" pubdate>Fri 19 July 2019</time>
         </header>
 
         <div class="article_content">
@@ -70,9 +70,13 @@
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Hello and welcome back to this final part of data cleaning. Once we're finished here we'll be ready to move on to exploring and analysing the data.</p>
+
+
+<p>Welcome to the final part of the data cleaning process. Once we're finished here we'll be ready to move on to exploring and analysing the data.</p>
 <p>As a quick re-cap, so far we have downloaded information on games from the Steam Store via the Steam API and SteamSpy API. We have cleaned and processed the data from the Steam API, and in this section we'll walkthrough cleaning data downloaded from the SteamSpy API. The overall goal of this project is to collect, clean and analyse data from the Steam Store with the idea of advising a fictional game developer or company.</p>
-<p>The previous posts when into great depth about the decisions made and methods used. This post will still go over a number of decisions, but will be more in the style of a brief overview than full discussion.</p>
+<p>The previous posts went into great depth about the decisions made and methods used. This post will still go over a number of decisions, but will be more in the style of a brief overview than full discussion.</p>
+
+
 <h2 id="Import-Libraries-and-Inspect-Data">Import Libraries and Inspect Data<a class="anchor-link" href="#Import-Libraries-and-Inspect-Data">&#182;</a></h2><p>Let's begin by importing the necessary libraries and inspecting the raw downloaded data.</p>
 
 </div>
@@ -1915,7 +1919,7 @@ First few tags: [&#39;1980s&#39;, &#34;1990&#39;s&#34;, &#39;2.5D&#39;, &#39;2D&
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>However to create the new dataframe from the tags and votes, we need to look inside the dictionaries in each row. We'll expand the logic to parse the tags using the <code>isintance</code> function to check each row for its type. If it is a dictionary, we return the dictionary. If it is a list, we'll return an empty dictionary <code>{}</code>. We'll also include an extra check in case there is anything else in the rows we haven't found yet.</p>
-<p>Next, we loop through the tags store in <code>cols</code>, standardise the format of the new column names, then extract the vote count of each tag by checking if the tag name is in each row's dictionary of tags.</p>
+<p>Next, we loop through the tags stored in <code>cols</code>, standardise the format of the new column names, then extract the vote count of each tag by checking if the tag name is in each row's dictionary of tags.</p>
 
 </div>
 </div>
@@ -4033,7 +4037,7 @@ dtype: int64</pre>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Finally, we can remove, reorder and rename some rows before exporting the complete, clean dataset.</p>
+<p>Finally, we can remove, reorder and rename some columns before exporting the complete, clean dataset.</p>
 <p>We'll remove the SteamSpy rows with overlap - name, languages and AppID. Next we reindex the dataframe, reordering the columns so it makes a little more logical sense to look at, and then we rename some of the columns to make it a bit clearer what they describe.</p>
 <p>This is a quick and simple step, but as we'll be making this data available for public use it's a very good idea to make it as user-friendly as possible.</p>
 
@@ -4268,7 +4272,7 @@ dtype: int64</pre>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>And with that, we have come to the end of the cleaning process. It's been a long journey and hopefully you've picked up something useful along the way, and now we can look ahead to analysing the data, creating some visualisations, and gaining some insights into the multi-billion dollar industry that is videogaming.</p>
+<p>And with that, we have come to the end of the cleaning process. It's been a long journey and hopefully you've picked up something useful along the way, and now we can look ahead to analysing the data, creating some visualisations, and gaining some insights into the multi-billion dollar industry that is video games.</p>
 
 </div>
 </div>
@@ -4316,6 +4320,21 @@ dtype: int64</pre>
                     <a href="https://nik-davis.github.io/tag/data.html" class="tag">data</a>
                     <a href="https://nik-davis.github.io/tag/cleaning.html" class="tag">cleaning</a>
             </div>
+        </div>
+        <div class="comments">
+            <h1>Comments</h1>
+            <div id="disqus_thread"></div>
+            <script type="text/javascript">
+                var disqus_shortname = 'nikdavis';
+                var disqus_identifier = 'posts/2019/steamspy-data-cleaning/';
+                var disqus_url = 'https://nik-davis.github.io/posts/2019/steamspy-data-cleaning/';
+                (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//nikdavis.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
         </div>
     </article>
 </div>
