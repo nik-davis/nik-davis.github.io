@@ -1,9 +1,9 @@
 Title: SteamSpy Data Cleaning in Python
 Slug: steamspy-data-cleaning
-Date: 2019-06-13
+Date: 2019-07-19
 Category: posts
 Tags: steam, jupyter, python, data, cleaning
-Status: draft
+Status: published
 
 *This post forms part of a larger series on downloading, processing and analysing data from the Steam store. [See all posts here]({tag}steam).*
 
