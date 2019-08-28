@@ -7,7 +7,7 @@
     <meta name="author" content="Nik Davis">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Steam Data Exploration | Nik Davis</title>
+    <title>Steam Data Exploration in Python | Nik Davis</title>
 
     <link rel="shortcut icon" href="/favicon.ico">
     <link rel="alternate" type="application/atom+xml" title="Nik Davis blog atom feed" href="/feeds/all.atom.xml" />
@@ -59,7 +59,7 @@
 <div class="container post">
     <article>
         <header>
-            <h1>Steam Data Exploration</h1>
+            <h1>Steam Data Exploration in Python</h1>
             <time datetime="article.date.isoformat()" pubdate>Mon 22 July 2019</time>
         </header>
 
@@ -70,14 +70,14 @@
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<!-- PELICAN_BEGIN_SUMMARY -->
+
 
 <p><a href="http://nik-davis.github.io/tag/steam">In the previous posts in this series</a> we successfully downloaded and cleaned a whole dataset from Steam and Steamspy. Today we're going to be diving into that dataset, getting to grips with it, and trying to get a sense of the gaming industry as a whole. We'll try to focus on questions like 'What makes a game great?' and 'What do the most popular games look like?'. Our answers will relate specifically to the Steam environment, but hopefully we'll be able to uncover some interesting insights that we can relate to the wider video game industry.</p>
 <p class="source" style="text-align: center">
     <img src="https://en.wikipedia.org/api/rest_v1/page/graph/png/Video_game_industry/0/f85d13c567f225f5e4fc8fd52f98c3f775e42591.png">
     Global revenues of the video game industry from 1971 to 2018, not adjusted for inflation. Source: <a href=https://en.wikipedia.org/wiki/Video_game_industry#Economics>Wikipedia</a>
 </p><p>Comparable in size to the film and music industry in the UK, and generating more than double the revenue of the film industry internationally, the video game industry is huge. Knowing how to navigate this landscape would be invaluable, so let's begin that process. In this post we'll be exploring the data, trying to make sense of it through visualisations in a process commonly referred to as <a href="https://en.wikipedia.org/wiki/Exploratory_data_analysis">Exploratory Data Analysis</a> (EDA).</p>
-<!-- PELICAN_END_SUMMARY -->
+
 
 <p>As usual we'll start by importing the libraries we'll be using, then load and inspect the data.</p>
 
@@ -3255,6 +3255,21 @@ Sekai Project tend to release indie/casual games.
                     <a href="https://nik-davis.github.io/tag/visualisation.html" class="tag">visualisation</a>
                     <a href="https://nik-davis.github.io/tag/eda.html" class="tag">eda</a>
             </div>
+        </div>
+        <div class="comments">
+            <h1>Comments</h1>
+            <div id="disqus_thread"></div>
+            <script type="text/javascript">
+                var disqus_shortname = 'nikdavis';
+                var disqus_identifier = 'posts/2019/steam-data-exploration/';
+                var disqus_url = 'https://nik-davis.github.io/posts/2019/steam-data-exploration/';
+                (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//nikdavis.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
         </div>
     </article>
 </div>
