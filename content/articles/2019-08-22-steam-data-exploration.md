@@ -1,9 +1,9 @@
-Title: Steam Data Exploration
+Title: Steam Data Exploration in Python
 Slug: steam-data-exploration
-Date: 2019-07-22
+Date: 2019-08-22
 Category: posts
 Tags: steam, jupyter, python, data, visualisation, eda
-Status: draft
+Status: published
 
 *This post forms part of a larger series on downloading, processing and analysing data from the Steam store. [See all posts here]({tag}steam).*
 
